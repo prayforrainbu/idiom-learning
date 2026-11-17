@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f4f8fb">
+<title>成語學習樂園</title>
+<style>
+:root{--ink:#243447;--muted:#718096;--blue:#5b9bd5;--blue2:#eaf4fc;--green:#69a995;--green2:#eaf5f1;--line:#e5edf3;--bg:#f5f8fb;--white:#fff;--shadow:0 10px 30px rgba(44,74,102,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif}
+header{background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;backdrop-filter:blur(10px)}
+.top{max-width:1120px;margin:auto;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:20px}.logo{width:39px;height:39px;border-radius:13px;background:linear-gradient(135deg,#dceefa,#dff1e9);display:grid;place-items:center;font-size:21px}
+.badge{font-size:12px;color:#5286ad;background:var(--blue2);padding:6px 10px;border-radius:20px}
+main{max-width:1120px;margin:28px auto;padding:0 22px 50px}
+.hero{background:linear-gradient(115deg,#eaf4fc,#edf7f3);border:1px solid #e1edf3;border-radius:24px;padding:30px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.hero h1{font-size:clamp(25px,4vw,36px);margin:0 0 9px}.hero p{margin:0;color:#627789;line-height:1.7}.hero-icon{font-size:60px;opacity:.85}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}
+.stat,.panel,.idiom-card{background:var(--white);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.stat{padding:17px 20px}.stat span{font-size:13px;color:var(--muted)}.stat strong{display:block;font-size:27px;margin-top:5px}
+.panel{padding:22px;margin-top:18px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.section-head h2{font-size:19px;margin:0}
+.controls{display:flex;gap:10px;flex-wrap:wrap}.search{flex:1;min-width:210px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:15px;outline:none}.search:focus{border-color:var(--blue)}
+select{padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:white;color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:16px}
+.idiom-card{padding:17px;transition:.18s}.idiom-card:hover{transform:translateY(-2px);border-color:#c8ddeb}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.idiom-card h3{font-size:21px;margin:12px 0 5px}.zhuyin{font-size:13px;color:#7290a7}.meaning{font-size:14px;line-height:1.65;color:#5f7180;min-height:46px;margin:10px 0}
+.tag{font-size:11px;padding:4px 8px;border-radius:20px;background:#f0f5f8;color:#688092}.check{accent-color:#5b9bd5;width:17px;height:17px}
+button{border:0;border-radius:11px;padding:10px 14px;font-weight:650;cursor:pointer;font-size:14px}
+.primary{background:var(--blue);color:white}.secondary{background:var(--blue2);color:#477da6}.soft{background:var(--green2);color:#4c8975}.outline{background:white;border:1px solid var(--line);color:#526879}
+button:disabled{opacity:.45;cursor:not-allowed}.selection-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;background:#f4f9fc;border-radius:14px;margin-top:16px}
+.empty{padding:32px;text-align:center;color:var(--muted)}
+footer{text-align:center;color:#91a0ad;font-size:12px;padding:25px}
+.modal{position:fixed;inset:0;background:#1d304766;display:none;place-items:center;padding:18px;z-index:10}.modal.show{display:grid}.dialog{background:white;width:min(560px,100%);border-radius:22px;padding:25px;box-shadow:0 20px 60px #172b4033}.dialog h2{font-size:29px;margin:6px 0}.dialog p{line-height:1.8;color:#5f7180}.dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.learn-word{font-size:34px;font-weight:800;text-align:center;margin:16px 0 4px}.learn-count{text-align:center;color:var(--muted);font-size:13px}.learn-meaning{background:#f5f9fc;padding:16px;border-radius:14px;line-height:1.8;margin:18px 0}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.top{padding:12px 16px}.brand{font-size:17px}.badge{display:none}main{padding:0 14px 35px;margin-top:17px}.hero{padding:22px}.hero-icon{font-size:42px}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:23px}.grid{grid-template-columns:1fr}.panel{padding:16px}.section-head{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="brand"><div class="logo">📚</div>成語學習樂園</div><div class="badge">繁體中文・跨裝置友善版面</div></div></header>
+<main>
+<section class="hero"><div><h1>每天學一點，累積成語力！</h1><p>搜尋喜歡的成語，自由挑選學習內容。<br>一次想學幾個都可以，沒有數量限制。</p></div><div class="hero-icon">🌱</div></section>
+<section class="stats">
+<div class="stat"><span>本次已選成語</span><strong id="selectedCount">0</strong></div>
+<div class="stat"><span>資料庫示範成語</span><strong id="totalCount">12</strong></div>
+<div class="stat"><span>已看過的成語</span><strong id="viewedCount">0</strong></div>
+</section>
+<section class="panel">
+<div class="section-head"><h2>成語圖書館</h2><span class="tag">可複選・不限數量</span></div>
+<div class="controls"><input class="search" id="search" placeholder="搜尋成語、注音或關鍵字…"><select id="level"><option value="全部">全部難度</option><option>初級</option><option>中級</option><option>高級</option></select></div>
+<div id="cards" class="grid"></div>
+<div class="selection-bar"><div>已選擇 <strong id="barCount">0</strong> 個成語</div><div class="controls"><button class="outline" id="clearBtn">清除選擇</button><button class="primary" id="learnBtn" disabled>開始學習 →</button></div></div>
+</section>
+<section class="panel"><div class="section-head"><h2>我的學習紀錄</h2><span class="tag">此試用版儲存在目前瀏覽器</span></div><p style="color:#6b7e8c;line-height:1.8;margin:0">開啟成語詳情或進入學習時，會記錄已看過的成語。正式版將再加入家長帳號、孩子個別檔案與雲端同步。</p></section>
+</main>
+<footer>成語學習樂園｜第一版互動原型・示範資料</footer>
+<div class="modal" id="detailModal"><div class="dialog"><div class="card-top"><span class="tag" id="detailLevel"></span><button class="outline" onclick="closeModal('detailModal')">✕</button></div><h2 id="detailWord"></h2><div class="zhuyin" id="detailZhuyin"></div><p id="detailMeaning"></p><p><strong>例句：</strong><span id="detailExample"></span></p><div class="dialog-actions"><button class="secondary" id="detailSelect">加入本次學習</button><button class="primary" onclick="closeModal('detailModal')">完成</button></div></div></div>
+<div class="modal" id="learnModal"><div class="dialog"><div class="card-top"><span class="tag">我的學習清單</span><button class="outline" onclick="closeModal('learnModal')">✕</button></div><div class="learn-count" id="learnCount"></div><div class="learn-word" id="learnWord"></div><div class="zhuyin" style="text-align:center" id="learnZhuyin"></div><div class="learn-meaning"><strong>意思：</strong><span id="learnMeaning"></span><br><br><strong>例句：</strong><span id="learnExample"></span></div><div class="dialog-actions"><button class="outline" id="prevBtn">上一個</button><button class="primary" id="nextBtn">下一個</button></div></div></div>
+<script>
+const idioms=[
+{word:"一馬當先",zhuyin:"ㄧ ㄇㄚˇ ㄉㄤ ㄒㄧㄢ",meaning:"形容領先、帶頭走在前面。",example:"班長一馬當先，帶領大家完成整理工作。",level:"初級"},
+{word:"七嘴八舌",zhuyin:"ㄑㄧ ㄗㄨㄟˇ ㄅㄚ ㄕㄜˊ",meaning:"形容許多人同時說話，議論紛紛。",example:"大家七嘴八舌地討論校外教學要去哪裡。",level:"初級"},
+{word:"手忙腳亂",zhuyin:"ㄕㄡˇ ㄇㄤˊ ㄐㄧㄠˇ ㄌㄨㄢˋ",meaning:"形容做事慌張，沒有條理。",example:"快要上課了，他才找不到作業，急得手忙腳亂。",level:"初級"},
+{word:"心花怒放",zhuyin:"ㄒㄧㄣ ㄏㄨㄚ ㄋㄨˋ ㄈㄤˋ",meaning:"形容心情非常愉快、興奮。",example:"收到期待已久的禮物，她高興得心花怒放。",level:"初級"},
+{word:"四腳朝天",zhuyin:"ㄙˋ ㄐㄧㄠˇ ㄔㄠˊ ㄊㄧㄢ",meaning:"形容仰面跌倒的樣子，也可形容翻倒。",example:"地面太滑，他不小心跌了個四腳朝天。",level:"初級"},
+{word:"七手八腳",zhuyin:"ㄑㄧ ㄕㄡˇ ㄅㄚ ㄐㄧㄠˇ",meaning:"形容許多人一起動手，動作忙亂或合作迅速。",example:"大家七手八腳地把教室布置完成。",level:"初級"},
+{word:"霧裡看花",zhuyin:"ㄨˋ ㄌㄧˇ ㄎㄢˋ ㄏㄨㄚ",meaning:"比喻看事情不清楚、不真切。",example:"沒有仔細閱讀說明，對規則就像霧裡看花。",level:"中級"},
+{word:"忙中有錯",zhuyin:"ㄇㄤˊ ㄓㄨㄥ ㄧㄡˇ ㄘㄨㄛˋ",meaning:"因為忙碌而容易發生錯誤。",example:"他趕著出門，忙中有錯，忘了帶鑰匙。",level:"中級"},
+{word:"歪打正著",zhuyin:"ㄨㄞ ㄉㄚˇ ㄓㄥˋ ㄓㄠˊ",meaning:"原本方法不對，卻意外得到好的結果。",example:"他本來想找鉛筆，卻歪打正著找到遺失的橡皮擦。",level:"中級"},
+{word:"翩翩起舞",zhuyin:"ㄆㄧㄢ ㄆㄧㄢ ㄑㄧˇ ㄨˇ",meaning:"形容輕快地跳起舞來。",example:"蝴蝶在花叢間翩翩起舞。",level:"中級"},
+{word:"七上八下",zhuyin:"ㄑㄧ ㄕㄤˋ ㄅㄚ ㄒㄧㄚˋ",meaning:"形容心情忐忑不安。",example:"公布考試成績前，他心裡七上八下。",level:"中級"},
+{word:"胸有成竹",zhuyin:"ㄒㄩㄥ ㄧㄡˇ ㄔㄥˊ ㄓㄨˊ",meaning:"比喻做事之前已有完整的想法或把握。",example:"她準備充分，回答問題時顯得胸有成竹。",level:"高級"}
+];
+let selected=new Set(), currentList=[], currentIndex=0;
+let viewed=new Set(JSON.parse(localStorage.getItem("idiomViewed")||"[]"));
+const $=id=>document.getElementById(id);
+function render(){const q=$("search").value.trim().toLowerCase(),lv=$("level").value;const list=idioms.filter(x=>(lv==="全部"||x.level===lv)&&(!q||(x.word+x.zhuyin+x.meaning).toLowerCase().includes(q)));
+$("cards").innerHTML=list.length?list.map(x=>`<article class="idiom-card"><div class="card-top"><span class="tag">${x.level}</span><input class="check" type="checkbox" aria-label="選擇${x.word}" ${selected.has(x.word)?"checked":""} onchange="toggle('${x.word}')"></div><h3>${x.word}</h3><div class="zhuyin">${x.zhuyin}</div><div class="meaning">${x.meaning}</div><button class="secondary" onclick="showDetail('${x.word}')">查看詳情</button></article>`).join(""):'<div class="empty">找不到符合條件的成語。</div>';
+$("selectedCount").textContent=selected.size;$("barCount").textContent=selected.size;$("learnBtn").disabled=!selected.size;$("totalCount").textContent=idioms.length;$("viewedCount").textContent=viewed.size;}
+function toggle(w){selected.has(w)?selected.delete(w):selected.add(w);render()}
+$("clearBtn").onclick=()=>{selected.clear();render()};
+$("search").addEventListener("input",render);$("level").addEventListener("change",render);
+function showDetail(w){const x=idioms.find(i=>i.word===w);viewed.add(w);localStorage.setItem("idiomViewed",JSON.stringify([...viewed]));$("detailLevel").textContent=x.level;$("detailWord").textContent=x.word;$("detailZhuyin").textContent=x.zhuyin;$("detailMeaning").textContent=x.meaning;$("detailExample").textContent=x.example;$("detailSelect").textContent=selected.has(w)?"從本次學習移除":"加入本次學習";$("detailSelect").onclick=()=>{toggle(w);$("detailSelect").textContent=selected.has(w)?"從本次學習移除":"加入本次學習"};$("detailModal").classList.add("show");render()}
+function closeModal(id){$(id).classList.remove("show")}
+$("learnBtn").onclick=()=>{currentList=idioms.filter(x=>selected.has(x.word));currentIndex=0;showLearn();$("learnModal").classList.add("show")};
+function showLearn(){const x=currentList[currentIndex];if(!x)return;$("learnCount").textContent=`第 ${currentIndex+1} / ${currentList.length} 個成語`;$("learnWord").textContent=x.word;$("learnZhuyin").textContent=x.zhuyin;$("learnMeaning").textContent=x.meaning;$("learnExample").textContent=x.example;$("prevBtn").disabled=currentIndex===0;$("nextBtn").textContent=currentIndex===currentList.length-1?"完成":"下一個"}
+$("prevBtn").onclick=()=>{if(currentIndex>0){currentIndex--;showLearn()}};
+$("nextBtn").onclick=()=>{if(currentIndex<currentList.length-1){currentIndex++;showLearn()}else closeModal("learnModal")};
+render();
+</script>
+</body></html>
