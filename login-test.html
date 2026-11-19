@@ -125,9 +125,19 @@ document.getElementById("loginForm")
       message.textContent =
         "✅ 帳號驗證成功，學習紀錄功能尚未開放。";
 
-    } catch (error) {
-      message.textContent =
-        "❌ " + (error.message || "登入服務發生錯誤");
+    
+} catch (error) {
+  const safeMessages = [
+    "帳號或 PIN 不正確",
+    "登入嘗試過多，請稍後再試",
+    "登入功能維護中"
+  ];
+
+  message.textContent = safeMessages.includes(error.message)
+    ? "❌ " + error.message
+    : "❌ 登入暫時無法完成，請稍後再試。";
+}
+
     } finally {
       document.getElementById("pin").value = "";
       button.disabled = false;
