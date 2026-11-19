@@ -74,12 +74,43 @@
   const FUNCTION_URL =
     "https://dluvolqcbyeoiusaixcz.supabase.co/functions/v1/idiom-auth";
 
-  document.getElementById("loginForm")
-    .addEventListener("submit", function(event) {
-      event.preventDefault();
-      document.getElementById("message").textContent =
-        "登入功能尚未開放，目前只測試伺服器連線。";
-    });
+ 
+document.getElementById("loginForm")
+  .addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const message = document.getElementById("message");
+    message.textContent = "正在確認登入服務狀態...";
+
+    try {
+      const response = await fetch(FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          action: "health"
+        })
+      });
+
+      const data = await response.json();
+
+      if (
+        response.ok &&
+        data.login_enabled === false
+      ) {
+        message.textContent =
+          "🔒 學生登入尚未開放，請稍後再試。";
+      } else {
+        message.textContent =
+          "⚠️ 登入服務狀態已變更，請等待管理者確認。";
+      }
+    } catch (error) {
+      message.textContent =
+        "❌ 無法連接登入伺服器，請稍後再試。";
+    }
+  });
+
 
   async function checkConnection() {
     const message = document.getElementById("message");
