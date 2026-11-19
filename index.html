@@ -21,7 +21,10 @@ function detail(w){let x=idioms.find(a=>a.word===w);alert(`${x.word} ${x.zhuyin}
 $('search').oninput=render;$('level').onchange=render;$('clear').onclick=()=>{selected.clear();render()};
 function tab(which){$('library').classList.toggle('hidden',which!=='library');$('quiz').classList.toggle('hidden',which!=='quiz');$('libraryTab').className=which==='library'?'soft active':'plain';$('quizTab').className=which==='quiz'?'soft active':'plain'}
 $('libraryTab').onclick=()=>tab('library');$('quizTab').onclick=()=>tab('quiz');
-$('startLearn').onclick=()=>{let arr=idioms.filter(x=>selected.has(x.word));if(!arr.length){alert('請先選擇至少一個成語。');return}let i=0;function show(){let x=arr[i];let more=i===arr.length-1?'完成':'下一個';if(confirm(`第 ${i+1} / ${arr.length} 個\n\n${x.word}（${x.zhuyin}）\n\n${x.meaning}\n\n例句：${x.example}\n\n按「確定」前往下一個；按「取消」結束。`)){if(i<arr.length-1){i++;show()}}}show()};
+$('startLearn').onclick=()=>{let arr=idioms.filter(x=>selected.has(x.word));if(!arr.length){alert('請先選擇至少一個成語。');return}let i=0;function show(){let x=arr[i];let more=i===arr.length-1?'完成':'下一個';if(confirm(`第 ${i+1} / ${arr.length} 個\n\n${x.word}（${x.zhuyin}）\n\n${x.meaning}\n\n例句：${x.example}\n\n按「確定」前往下一個；按「取消」結束。`)){viewed.add(x.word);
+localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
+$('learned').textContent=viewed.size;
+if(i<arr.length-1){i++;show()}}}show()};
 $('startQuiz').onclick=()=>{tab('quiz');begin(selected.size?idioms.filter(x=>selected.has(x.word)):idioms)};
 $('beginQuiz').onclick=()=>begin(selected.size?idioms.filter(x=>selected.has(x.word)):idioms);
 function begin(pool){let n=$('quizCount').value==='all'?pool.length:Number($('quizCount').value);quizList=[...pool].sort(()=>Math.random()-.5).slice(0,n);qi=0;score=0;wrong=[];$('quizArea').classList.remove('hidden');showQuestion()}
