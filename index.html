@@ -4,10 +4,15 @@
 </style></head><body><header>📚 成語學習樂園</header><main>
 <section class="hero"><div><h1>每天學一點，累積成語力！</h1><p>搜尋、挑選成語，自由安排學習內容。自選數量不限。</p></div><div style="font-size:48px">🌱</div></section>
 <section class="stats"><div class="stat"><small>資料庫成語</small><strong id="total">30</strong></div><div class="stat"><small>本次已選</small><strong id="picked">0</strong></div><div class="stat"><small>累積作答題數（本裝置）</small><strong id="answered">0</strong></div><div class="stat"><small>已學成語（本裝置）</small><strong id="learned">0</strong></div></section>
-<section class="panel"><div class="tabs"><button class="soft active" id="libraryTab">成語圖書館</button><button class="plain" id="quizTab">成語測驗</button></div>
+<section class="panel"><div class="tabs"><button class="soft active" id="libraryTab">成語圖書館</button><button class="plain" id="quizTab">成語測驗</button><button class="plain" id="mistakeTab">我的錯題本</button></div>
 <div id="library"><h2 style="margin-top:18px">搜尋並自選成語</h2><div class="row"><input id="search" placeholder="搜尋成語、注音或解釋"><select id="level"><option>全部難度</option><option>初級</option><option>中級</option><option>高級</option></select></div><div id="cards" class="cards"></div><div class="bar"><span>已選 <b id="chosen">0</b> 個成語（不限數量）</span><div class="row"><button class="plain" id="clear">清除</button><button class="primary" id="startLearn">開始學習</button><button class="soft" id="startQuiz">用選取成語測驗</button></div></div></div>
 <div id="quiz" class="hidden"><h2 style="margin-top:18px">成語測驗</h2><p>可測驗本次選取的成語；若沒有選取，系統會從資料庫出題。每題依解釋選出正確成語。</p><div class="row"><select id="quizCount"><option value="10">10 題</option><option value="20">20 題</option><option value="all">全部可用題目</option></select><button class="primary" id="beginQuiz">開始測驗</button></div><div id="quizArea" class="hidden"><div class="muted" id="progress"></div><div class="question" id="question"></div><div class="options" id="options"></div><div class="result hidden" id="feedback"></div><div class="bar"><span id="score"></span><button class="primary" id="next" disabled>下一題</button></div></div></div>
 </section>
+<div id="mistakePage" class="panel hidden">
+  <h2>📕 我的錯題本</h2>
+  <p>這裡會顯示測驗答錯的成語，方便日後複習。</p>
+  <div id="mistakeList"></div>
+</div>
 <section class="panel"><h2>學習紀錄（目前儲存在這台裝置）</h2><p id="history">完成測驗後，這裡會顯示最近一次成績。正式雲端版會再加入家庭帳號及跨裝置同步。</p></section>
 </main><footer>成語學習樂園｜互動原型 V1.1・資料為教學示範，後續可持續校訂擴充</footer>
 <script>
@@ -20,14 +25,44 @@ function render(){let q=$('search').value.trim().toLowerCase(),lv=$('level').val
 function toggle(w){selected.has(w)?selected.delete(w):selected.add(w);render()}
 function detail(w){let x=idioms.find(a=>a.word===w);alert(`${x.word} ${x.zhuyin}\n\n${x.meaning}\n\n例句：${x.example}`);viewed.add(w);localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));$('learned').textContent=viewed.size}
 $('search').oninput=render;$('level').onchange=render;$('clear').onclick=()=>{selected.clear();render()};
-function tab(which){$('library').classList.toggle('hidden',which!=='library');$('quiz').classList.toggle('hidden',which!=='quiz');$('libraryTab').className=which==='library'?'soft active':'plain';$('quizTab').className=which==='quiz'?'soft active':'plain'}
-$('libraryTab').onclick=()=>tab('library');$('quizTab').onclick=()=>tab('quiz');
+function tab(which){
+  $('library').classList.toggle('hidden',which!=='library');
+  $('quiz').classList.toggle('hidden',which!=='quiz');
+  $('mistakePage').classList.toggle('hidden',which!=='mistake');
+
+  $('libraryTab').className=which==='library'?'soft active':'plain';
+  $('quizTab').className=which==='quiz'?'soft active':'plain';
+  $('mistakeTab').className=which==='mistake'?'soft active':'plain';
+}
+$('libraryTab').onclick=()=>tab('library');
+$('quizTab').onclick=()=>tab('quiz');
+$('mistakeTab').onclick=()=>{
+  renderMistakes();
+  tab('mistake');
+};
 $('startLearn').onclick=()=>{let arr=idioms.filter(x=>selected.has(x.word));if(!arr.length){alert('請先選擇至少一個成語。');return}let i=0;function show(){let x=arr[i];let more=i===arr.length-1?'完成':'下一個';if(confirm(`第 ${i+1} / ${arr.length} 個\n\n${x.word}（${x.zhuyin}）\n\n${x.meaning}\n\n例句：${x.example}\n\n按「確定」前往下一個；按「取消」結束。`)){viewed.add(x.word);
 localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
 $('learned').textContent=viewed.size;
 if(i<arr.length-1){i++;show()}}}show()};
 $('startQuiz').onclick=()=>{tab('quiz');begin(selected.size?idioms.filter(x=>selected.has(x.word)):idioms)};
 $('beginQuiz').onclick=()=>begin(selected.size?idioms.filter(x=>selected.has(x.word)):idioms);
+function renderMistakes(){
+  let list=idioms.filter(x=>mistakeBook.has(x.word));
+
+  if(list.length===0){
+    $('mistakeList').innerHTML='<p>目前沒有錯題，繼續保持！</p>';
+    return;
+  }
+
+  $('mistakeList').innerHTML=list.map(x=>`
+    <article class="card">
+      <h3>${x.word}</h3>
+      <div class="muted">${x.zhuyin}</div>
+      <p class="meaning">${x.meaning}</p>
+      <p>例句：${x.example}</p>
+    </article>
+  `).join('');
+}
 function begin(pool){let n=$('quizCount').value==='all'?pool.length:Number($('quizCount').value);quizList=[...pool].sort(()=>Math.random()-.5).slice(0,n);qi=0;score=0;wrong=[];$('quizArea').classList.remove('hidden');showQuestion()}
 function showQuestion(){let x=quizList[qi];$('progress').textContent=`第 ${qi+1} / ${quizList.length} 題`;$('question').textContent=`「${x.meaning}」最適合哪個成語？`;$('feedback').classList.add('hidden');$('next').disabled=true;$('score').textContent=`目前答對：${score} 題`;let opts=[x,...idioms.filter(a=>a.word!==x.word).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);$('options').innerHTML=opts.map(a=>`<button class="option" onclick="answer('${a.word}','${x.word}',this)">${a.word}</button>`).join('')}
 function answer(choice,correct,btn){if ($('next').disabled === false) return;let buttons=[...$('options').children];buttons.forEach(b=>b.disabled=true);let ok=choice===correct;if(ok){score++;btn.classList.add('correct')}else{btn.classList.add('wrong');buttons.find(b=>b.textContent===correct)?.classList.add('correct');wrong.push(correct);
