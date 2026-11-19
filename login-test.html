@@ -75,12 +75,18 @@
     "https://dluvolqcbyeoiusaixcz.supabase.co/functions/v1/idiom-auth";
 
  
+
 document.getElementById("loginForm")
   .addEventListener("submit", async function(event) {
     event.preventDefault();
 
     const message = document.getElementById("message");
+    const button = document.querySelector(
+      '#loginForm button[type="submit"]'
+    );
+
     message.textContent = "正在確認登入服務狀態...";
+    button.disabled = true;
 
     try {
       const response = await fetch(FUNCTION_URL, {
@@ -93,23 +99,41 @@ document.getElementById("loginForm")
         })
       });
 
+      if (!response.ok) {
+        throw new Error("無法確認登入服務狀態");
+      }
+
       const data = await response.json();
 
-      if (
-        response.ok &&
-        data.login_enabled === false
-      ) {
+      if (data.login_enabled !== true) {
         message.textContent =
           "🔒 學生登入尚未開放，請稍後再試。";
-      } else {
-        message.textContent =
-          "⚠️ 登入服務狀態已變更，請等待管理者確認。";
+        return;
       }
+
+      const username = document.getElementById("username")
+        .value.trim().toLowerCase();
+
+      const pin = document.getElementById("pin").value;
+
+      message.textContent = "正在驗證學生帳號...";
+
+      const result = await loginStudent(username, pin);
+
+      // 暫時不儲存登入憑證
+      // 等安全檢查完成後，再設計登入狀態管理
+      message.textContent =
+        "✅ 帳號驗證成功，學習紀錄功能尚未開放。";
+
     } catch (error) {
       message.textContent =
-        "❌ 無法連接登入伺服器，請稍後再試。";
+        "❌ " + (error.message || "登入服務發生錯誤");
+    } finally {
+      document.getElementById("pin").value = "";
+      button.disabled = false;
     }
   });
+
 
 
 async function loginStudent(username, pin) {
