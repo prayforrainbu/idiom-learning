@@ -112,6 +112,30 @@ document.getElementById("loginForm")
   });
 
 
+async function loginStudent(username, pin) {
+  const response = await fetch(FUNCTION_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      action: "login",
+      username: username,
+      pin: pin
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || "登入失敗，請稍後再試"
+    );
+  }
+
+  return data;
+}
+
   async function checkConnection() {
     const message = document.getElementById("message");
     message.textContent = "正在檢查 Supabase 連線...";
