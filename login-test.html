@@ -69,14 +69,56 @@
     <p id="message" role="status" aria-live="polite"></p>
   </main>
 
-  <script>
-    document.getElementById("loginForm")
-      .addEventListener("submit", function(event) {
-        event.preventDefault();
+  
+<script>
+  const FUNCTION_URL =
+    "https://dluvolqcbyeoiusaixcz.supabase.co/functions/v1/idiom-auth";
 
-        document.getElementById("message").textContent =
-          "登入介面測試成功！目前尚未連接伺服器。";
+  document.getElementById("loginForm")
+    .addEventListener("submit", function(event) {
+      event.preventDefault();
+      document.getElementById("message").textContent =
+        "登入功能尚未開放，目前只測試伺服器連線。";
+    });
+
+  async function checkConnection() {
+    const message = document.getElementById("message");
+    message.textContent = "正在檢查 Supabase 連線...";
+
+    try {
+      const response = await fetch(FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          action: "health"
+        })
       });
-  </script>
+
+      const data = await response.json();
+
+      if (
+        response.ok &&
+        data.configuration === "ready" &&
+        data.status === "maintenance" &&
+        data.login_enabled === false &&
+        data.registration_enabled === false
+      ) {
+        message.textContent =
+          "✅ Supabase 連線成功！登入及註冊功能仍維持關閉。";
+      } else {
+        message.textContent =
+          "⚠️ 已收到伺服器回應，但設定與預期不同。";
+      }
+    } catch (error) {
+      message.textContent =
+        "❌ Supabase 連線失敗：" + error.message;
+    }
+  }
+
+  checkConnection();
+</script>
+
 </body>
 </html>
