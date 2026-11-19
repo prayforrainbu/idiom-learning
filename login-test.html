@@ -118,6 +118,42 @@
   }
 
   checkConnection();
+  
+  async function testLoginProtection() {
+    const message = document.getElementById("message");
+
+    try {
+      const response = await fetch(FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          action: "login"
+        })
+      });
+
+      const data = await response.json();
+
+      if (
+        response.status === 503 &&
+        data.error === "登入功能維護中"
+      ) {
+        message.textContent =
+          "✅ 安全測試通過：未授權登入已被阻擋。";
+      } else {
+        message.textContent =
+          "⚠️ 安全測試結果與預期不同，HTTP 狀態：" +
+          response.status;
+      }
+    } catch (error) {
+      message.textContent =
+        "❌ 安全測試失敗：" + error.message;
+    }
+  }
+
+  testLoginProtection();
+
 </script>
 
 </body>
