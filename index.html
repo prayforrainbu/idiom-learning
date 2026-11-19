@@ -11,7 +11,8 @@
 <div id="mistakePage" class="panel hidden">
   <h2>📕 我的錯題本</h2>
   <p>這裡會顯示測驗答錯的成語，方便日後複習。</p>
-  <div id="mistakeList"></div>
+ <button class="primary" id="retryMistakes">重新測驗錯題</button>
+<div id="mistakeList"></div>
 </div>
 <section class="panel"><h2>學習紀錄（目前儲存在這台裝置）</h2><p id="history">完成測驗後，這裡會顯示最近一次成績。正式雲端版會再加入家庭帳號及跨裝置同步。</p></section>
 </main><footer>成語學習樂園｜互動原型 V1.1・資料為教學示範，後續可持續校訂擴充</footer>
@@ -63,6 +64,17 @@ function renderMistakes(){
     </article>
   `).join('');
 }
+$('retryMistakes').onclick=()=>{
+  let pool=idioms.filter(x=>mistakeBook.has(x.word));
+
+  if(pool.length===0){
+    alert('目前沒有錯題可以測驗！');
+    return;
+  }
+
+  tab('quiz');
+  begin(pool);
+};
 function begin(pool){let n=$('quizCount').value==='all'?pool.length:Number($('quizCount').value);quizList=[...pool].sort(()=>Math.random()-.5).slice(0,n);qi=0;score=0;wrong=[];$('quizArea').classList.remove('hidden');showQuestion()}
 function showQuestion(){let x=quizList[qi];$('progress').textContent=`第 ${qi+1} / ${quizList.length} 題`;$('question').textContent=`「${x.meaning}」最適合哪個成語？`;$('feedback').classList.add('hidden');$('next').disabled=true;$('score').textContent=`目前答對：${score} 題`;let opts=[x,...idioms.filter(a=>a.word!==x.word).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);$('options').innerHTML=opts.map(a=>`<button class="option" onclick="answer('${a.word}','${x.word}',this)">${a.word}</button>`).join('')}
 function answer(choice,correct,btn){if ($('next').disabled === false) return;let buttons=[...$('options').children];buttons.forEach(b=>b.disabled=true);let ok=choice===correct;if(ok){score++;btn.classList.add('correct')}else{btn.classList.add('wrong');buttons.find(b=>b.textContent===correct)?.classList.add('correct');wrong.push(correct);
