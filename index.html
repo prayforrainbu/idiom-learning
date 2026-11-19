@@ -47,7 +47,16 @@ $('learned').textContent=viewed.size;
 if(i<arr.length-1){i++;show()}}}show()};
 $('startQuiz').onclick=()=>{tab('quiz');begin(selected.size?idioms.filter(x=>selected.has(x.word)):idioms)};
 $('beginQuiz').onclick=()=>begin(selected.size?idioms.filter(x=>selected.has(x.word)):idioms);
-function renderMistakes(){
+function removeMistake(word){
+  if(!confirm(`確定要將「${word}」從錯題本移除嗎？`)){
+    return;
+  }
+
+  mistakeBook.delete(word);
+  localStorage.setItem('idiomMistakes',JSON.stringify([...mistakeBook]));
+  renderMistakes();
+}
+  function renderMistakes(){
   let list=idioms.filter(x=>mistakeBook.has(x.word));
 
   if(list.length===0){
@@ -61,6 +70,7 @@ function renderMistakes(){
       <div class="muted">${x.zhuyin}</div>
       <p class="meaning">${x.meaning}</p>
       <p>例句：${x.example}</p>
+      <button class="soft" onclick="removeMistake('${x.word}')">移除錯題</button>
     </article>
   `).join('');
 }
