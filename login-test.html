@@ -1,0 +1,82 @@
+
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>成語學習樂園｜登入測試</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #f5f8fb;
+      font-family: system-ui, "Microsoft JhengHei", sans-serif;
+      color: #26384a;
+    }
+    .panel {
+      width: min(360px, calc(100% - 48px));
+      background: white;
+      border: 1px solid #e4edf3;
+      border-radius: 18px;
+      padding: 28px;
+    }
+    h1 { font-size: 24px; }
+    label { display: block; margin-top: 18px; }
+    input {
+      box-sizing: border-box;
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px;
+      border: 1px solid #dce7ef;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 12px;
+      border: 0;
+      border-radius: 10px;
+      background: #5c9ed2;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    p { color: #718397; }
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <h1>📚 成語學習樂園</h1>
+    <p>學生登入｜V1.2 測試版</p>
+
+    <form id="loginForm">
+      <label for="username">學生帳號</label>
+      <input id="username" autocomplete="username" required>
+
+      <label for="pin">6 位數登入 PIN</label>
+      <input id="pin" type="password"
+             inputmode="numeric"
+             pattern="[0-9]{6}"
+             maxlength="6"
+             autocomplete="off" required>
+
+      <button type="submit">登入</button>
+    </form>
+
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+
+  <script>
+    document.getElementById("loginForm")
+      .addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        document.getElementById("message").textContent =
+          "登入介面測試成功！目前尚未連接伺服器。";
+      });
+  </script>
+</body>
+</html>
