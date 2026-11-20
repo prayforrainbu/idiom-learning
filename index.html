@@ -23,6 +23,19 @@ let mistakeBook = new Set(JSON.parse(localStorage.getItem('idiomMistakes') || '[
 const $=id=>document.getElementById(id);
 $('total').textContent=idioms.length;$('answered').textContent=answered;$('learned').textContent=viewed.size;
 function render(){let q=$('search').value.trim().toLowerCase(),lv=$('level').value;let list=idioms.filter(x=>(lv==='全部難度'||x.level===lv)&&(!q||(x.word+x.zhuyin+x.meaning).toLowerCase().includes(q)));$('cards').innerHTML=list.map(x=>`<article class="card"><div class="row" style="justify-content:space-between"><span class="tag">${x.level}</span><input class="check" style="flex:0;width:18px;min-width:18px" type="checkbox" ${selected.has(x.word)?'checked':''} onchange="toggle('${x.word}')"></div><h3>${x.word}</h3><div class="muted">${x.zhuyin}</div><p class="meaning">${x.meaning}</p><button class="soft" onclick="detail('${x.word}')">查看例句</button></article>`).join('');$('picked').textContent=selected.size;$('chosen').textContent=selected.size}
+function selectAll(){
+  let q=$('search').value.trim().toLowerCase();
+  let lv=$('level').value;
+
+  let list=idioms.filter(x=>
+    (lv==='全部難度'||x.level===lv)&&
+    (!q||(x.word+x.zhuyin+x.meaning).toLowerCase().includes(q))
+  );
+
+  list.forEach(x=>selected.add(x.word));
+  render();
+}
+
 function toggle(w){selected.has(w)?selected.delete(w):selected.add(w);render()}
 function detail(w){let x=idioms.find(a=>a.word===w);alert(`${x.word} ${x.zhuyin}\n\n${x.meaning}\n\n例句：${x.example}`);viewed.add(w);localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));$('learned').textContent=viewed.size}
 $('search').oninput=render;$('level').onchange=render;$('clear').onclick=()=>{selected.clear();render()};
