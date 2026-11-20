@@ -148,7 +148,20 @@ $('retryMistakes').onclick=()=>{
   tab('quiz');
   begin(pool);
 };
-function begin(pool){let n=$('quizCount').value==='all'?pool.length:Number($('quizCount').value);quizList=[...pool].sort(()=>Math.random()-.5).slice(0,n);qi=0;score=0;wrong=[];$('quizArea').classList.remove('hidden');showQuestion()}
+
+function begin(pool){
+  let source = quizQuestions.length > 0 ? quizQuestions : pool;
+  let n = $('quizCount').value === 'all'
+    ? source.length
+    : Number($('quizCount').value);
+
+  quizList = [...source].sort(() => Math.random() - .5).slice(0, n);
+  qi = 0;
+  score = 0;
+  wrong = [];
+  $('quizArea').classList.remove('hidden');
+  showQuestion();
+}
 function showQuestion(){let x=quizList[qi];$('progress').textContent=`第 ${qi+1} / ${quizList.length} 題`;$('question').textContent=`「${x.meaning}」最適合哪個成語？`;$('feedback').classList.add('hidden');$('next').disabled=true;$('score').textContent=`目前答對：${score} 題`;let opts=[x,...
 idioms.filter(a=>a.word && a.word.trim() && a.meaning && a.meaning.trim() && a.word!==x.word)
 .sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);$('options').innerHTML=opts.map(a=>`<button class="option" onclick="answer('${a.word}','${x.word}',this)">${a.word}</button>`).join('')}
