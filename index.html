@@ -196,7 +196,15 @@ opts.forEach(option => {
   $('options').appendChild(btn);
 });
 }
-function answer(choice,correct,btn){if ($('next').disabled === false) return;let buttons=[...$('options').children];buttons.forEach(b=>b.disabled=true);let ok=choice===correct;if(ok){score++;btn.classList.add('correct')}else{btn.classList.add('wrong');buttons.find(b=>b.textContent===correct)?.classList.add('correct');
+function answer(choice,correct,btn){if ($('next').disabled === false) return;let buttons=[...$('options').children];buttons.forEach(b=>b.disabled=true);let ok=choice===correct;
+if(ok){
+  score++;
+  btn.classList.add('correct');
+
+  masteredIdioms.add(quizList[qi].word);
+  localStorage.setItem('idiomMastered', JSON.stringify([...masteredIdioms]));
+}
+else{btn.classList.add('wrong');buttons.find(b=>b.textContent===correct)?.classList.add('correct');
 wrong.push(quizList[qi].word);
 mistakeBook.add(quizList[qi].word);
 localStorage.setItem('idiomMistakes', JSON.stringify([...mistakeBook]))}answered++;localStorage.setItem('idiomAnswered',answered);$('answered').textContent=answered;$('feedback').textContent=ok?'答對了！':'再記一次：'+correct+'。'+(idioms.find(x=>x.word===quizList[qi].word)?.meaning || quizList[qi].explanation || '');$('feedback').classList.remove('hidden');$('next').disabled=false;$('score').textContent=`目前答對：${score} 題`}
