@@ -38,6 +38,30 @@ let idioms=[{"word": "一馬當先", "zhuyin": "ㄧ ㄇㄚˇ ㄉㄤ ㄒㄧㄢ", 
 let selected=new Set(),viewed=new Set(JSON.parse(localStorage.getItem('idiomViewed')||'[]')),answered=Number(localStorage.getItem('idiomAnswered')||0),quizList=[],qi=0,score=0,wrong=[];
 
 let quizQuestions = [];
+
+async function loadQuizQuestions(){
+  try {
+    const response = await fetch("./quiz_questions.json");
+    if (!response.ok) throw new Error("無法讀取測驗題庫");
+
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error("題庫格式不正確");
+
+    quizQuestions = data.filter(q =>
+      q.reviewed === true &&
+      typeof q.question === "string" &&
+      typeof q.answer === "string" &&
+      Array.isArray(q.options) &&
+      q.options.length === 4 &&
+      q.options.includes(q.answer)
+    );
+
+    console.log("已載入審核通過的測驗題目：" + quizQuestions.length + "題");
+  } catch (error) {
+    console.error("測驗題庫載入失敗：", error);
+  }
+}
+
 let mistakeBook = new Set(JSON.parse(localStorage.getItem('idiomMistakes') || '[]'));
 const $=id=>document.getElementById(id);
 $('total').textContent=idioms.length;$('answered').textContent=answered;$('learned').textContent=viewed.size;
