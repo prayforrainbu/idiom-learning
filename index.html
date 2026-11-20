@@ -164,9 +164,27 @@ function begin(pool){
 }
 function showQuestion(){let x=quizList[qi];$('progress').textContent=`第 ${qi+1} / ${quizList.length} 題`;
 $('question').textContent = x.question || `「${x.meaning}」最適合哪個成語？`;
-$('feedback').classList.add('hidden');$('next').disabled=true;$('score').textContent=`目前答對：${score} 題`;let opts=[x,...
-idioms.filter(a=>a.word && a.word.trim() && a.meaning && a.meaning.trim() && a.word!==x.word)
-.sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);$('options').innerHTML=opts.map(a=>`<button class="option" onclick="answer('${a.word}','${x.word}',this)">${a.word}</button>`).join('')}
+$('feedback').classList.add('hidden');$('next').disabled=true;$('score').textContent=`目前答對：${score} 題`;
+let opts = Array.isArray(x.options)
+  ? [...x.options].sort(() => Math.random() - .5)
+  : [x, ...idioms.filter(a =>
+      a.word && a.word.trim() &&
+      a.meaning && a.meaning.trim() &&
+      a.word !== x.word
+    ).sort(() => Math.random() - .5).slice(0, 3)]
+    .map(a => a.word)
+    .sort(() => Math.random() - .5);
+
+$('options').innerHTML = '';
+
+opts.forEach(option => {
+  const btn = document.createElement('button');
+  btn.className = 'option';
+  btn.textContent = option;
+  btn.onclick = () => answer(option, x.answer || x.word, btn);
+  $('options').appendChild(btn);
+});
+}
 function answer(choice,correct,btn){if ($('next').disabled === false) return;let buttons=[...$('options').children];buttons.forEach(b=>b.disabled=true);let ok=choice===correct;if(ok){score++;btn.classList.add('correct')}else{btn.classList.add('wrong');buttons.find(b=>b.textContent===correct)?.classList.add('correct');wrong.push(correct);
 mistakeBook.add(correct);
 localStorage.setItem('idiomMistakes', JSON.stringify([...mistakeBook]))}answered++;localStorage.setItem('idiomAnswered',answered);$('answered').textContent=answered;$('feedback').textContent=ok?'答對了！':'再記一次：'+correct+'。'+(idioms.find(x=>x.word===quizList[qi].word)?.meaning || quizList[qi].explanation || '');$('feedback').classList.remove('hidden');$('next').disabled=false;$('score').textContent=`目前答對：${score} 題`}
