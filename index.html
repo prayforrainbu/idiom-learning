@@ -185,8 +185,9 @@ opts.forEach(option => {
   $('options').appendChild(btn);
 });
 }
-function answer(choice,correct,btn){if ($('next').disabled === false) return;let buttons=[...$('options').children];buttons.forEach(b=>b.disabled=true);let ok=choice===correct;if(ok){score++;btn.classList.add('correct')}else{btn.classList.add('wrong');buttons.find(b=>b.textContent===correct)?.classList.add('correct');wrong.push(correct);
-mistakeBook.add(correct);
+function answer(choice,correct,btn){if ($('next').disabled === false) return;let buttons=[...$('options').children];buttons.forEach(b=>b.disabled=true);let ok=choice===correct;if(ok){score++;btn.classList.add('correct')}else{btn.classList.add('wrong');buttons.find(b=>b.textContent===correct)?.classList.add('correct');
+wrong.push(quizList[qi].word);
+mistakeBook.add(quizList[qi].word);
 localStorage.setItem('idiomMistakes', JSON.stringify([...mistakeBook]))}answered++;localStorage.setItem('idiomAnswered',answered);$('answered').textContent=answered;$('feedback').textContent=ok?'答對了！':'再記一次：'+correct+'。'+(idioms.find(x=>x.word===quizList[qi].word)?.meaning || quizList[qi].explanation || '');$('feedback').classList.remove('hidden');$('next').disabled=false;$('score').textContent=`目前答對：${score} 題`}
 $('next').onclick=()=>{if(qi<quizList.length-1){qi++;showQuestion()}else{let pct=Math.round(score/quizList.length*100);$('question').textContent=`測驗完成！答對 ${score} / ${quizList.length} 題，正確率 ${pct}%。`;$('options').innerHTML='';$('feedback').textContent=wrong.length?'需要複習：'+[...new Set(wrong)].join('、'):'太棒了！本次沒有答錯。';$('feedback').classList.remove('hidden');$('progress').textContent='本次測驗結果';$('next').disabled=true;$('history').textContent=`最近一次測驗：${new Date().toLocaleString('zh-TW')}；${score} / ${quizList.length} 題，正確率 ${pct}%；錯題：${[...new Set(wrong)].join('、')||'無'}。`;localStorage.setItem('idiomLastResult',$('history').textContent)}};
 render();if(localStorage.getItem('idiomLastResult'))$('history').textContent=localStorage.getItem('idiomLastResult');
