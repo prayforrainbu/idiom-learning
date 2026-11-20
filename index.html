@@ -150,7 +150,11 @@ $('retryMistakes').onclick=()=>{
 };
 
 function begin(pool){
-  let source = quizQuestions.length > 0 ? quizQuestions : pool;
+  
+let source = quizQuestions.length > 0
+  ? quizQuestions.filter(q => pool.some(x => x.word === q.word))
+  : pool;
+
   let n = $('quizCount').value === 'all'
     ? source.length
     : Number($('quizCount').value);
