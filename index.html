@@ -162,7 +162,9 @@ function begin(pool){
   $('quizArea').classList.remove('hidden');
   showQuestion();
 }
-function showQuestion(){let x=quizList[qi];$('progress').textContent=`第 ${qi+1} / ${quizList.length} 題`;$('question').textContent=`「${x.meaning}」最適合哪個成語？`;$('feedback').classList.add('hidden');$('next').disabled=true;$('score').textContent=`目前答對：${score} 題`;let opts=[x,...
+function showQuestion(){let x=quizList[qi];$('progress').textContent=`第 ${qi+1} / ${quizList.length} 題`;
+$('question').textContent = x.question || `「${x.meaning}」最適合哪個成語？`;
+$('feedback').classList.add('hidden');$('next').disabled=true;$('score').textContent=`目前答對：${score} 題`;let opts=[x,...
 idioms.filter(a=>a.word && a.word.trim() && a.meaning && a.meaning.trim() && a.word!==x.word)
 .sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);$('options').innerHTML=opts.map(a=>`<button class="option" onclick="answer('${a.word}','${x.word}',this)">${a.word}</button>`).join('')}
 function answer(choice,correct,btn){if ($('next').disabled === false) return;let buttons=[...$('options').children];buttons.forEach(b=>b.disabled=true);let ok=choice===correct;if(ok){score++;btn.classList.add('correct')}else{btn.classList.add('wrong');buttons.find(b=>b.textContent===correct)?.classList.add('correct');wrong.push(correct);
