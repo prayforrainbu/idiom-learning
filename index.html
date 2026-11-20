@@ -62,6 +62,8 @@ async function loadQuizQuestions(){
   }
 }
 
+
+loadQuizQuestions();
 let mistakeBook = new Set(JSON.parse(localStorage.getItem('idiomMistakes') || '[]'));
 const $=id=>document.getElementById(id);
 $('total').textContent=idioms.length;$('answered').textContent=answered;$('learned').textContent=viewed.size;
