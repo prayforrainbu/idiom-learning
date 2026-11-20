@@ -36,6 +36,11 @@ function selectAll(){
   render();
 }
 
+function clearAll(){
+  selected.clear();
+  render();
+}
+
 function toggle(w){selected.has(w)?selected.delete(w):selected.add(w);render()}
 function detail(w){let x=idioms.find(a=>a.word===w);alert(`${x.word} ${x.zhuyin}\n\n${x.meaning}\n\n例句：${x.example}`);viewed.add(w);localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));$('learned').textContent=viewed.size}
 $('search').oninput=render;$('level').onchange=render;$('clear').onclick=()=>{selected.clear();render()};
