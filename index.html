@@ -160,6 +160,12 @@ let source = quizQuestions.length > 0
     : Number($('quizCount').value);
 
   quizList = [...source].sort(() => Math.random() - .5).slice(0, n);
+
+if (quizList.length === 0) {
+  alert('目前沒有符合條件且已審核的測驗題目！');
+  return;
+}
+
   qi = 0;
   score = 0;
   wrong = [];
