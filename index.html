@@ -92,7 +92,57 @@
   </div>
 </div>
 
+
+<div id="personalQuestionForm" class="panel hidden">
+
+  <h3 id="personalQuestionFormTitle">新增個人題目</h3>
+
+  <label for="personalQuestionType">題目類型</label>
+  <select id="personalQuestionType">
+    <option value="situation">情境選擇題</option>
+    <option value="fill">成語填空題</option>
+    <option value="meaning">成語解釋選擇題</option>
+  </select>
+
+  <label for="personalQuestionWord">對應成語</label>
+  <input id="personalQuestionWord" placeholder="例如：心花怒放">
+
+  <label for="personalQuestionText">題目內容</label>
+  <textarea id="personalQuestionText" rows="3" placeholder="請輸入測驗題目"></textarea>
+
+  <label for="personalOptionA">選項 A</label>
+  <input id="personalOptionA" placeholder="請輸入選項 A">
+
+  <label for="personalOptionB">選項 B</label>
+  <input id="personalOptionB" placeholder="請輸入選項 B">
+
+  <label for="personalOptionC">選項 C</label>
+  <input id="personalOptionC" placeholder="請輸入選項 C">
+
+  <label for="personalOptionD">選項 D</label>
+  <input id="personalOptionD" placeholder="請輸入選項 D">
+
+  <label for="personalQuestionAnswer">正確答案</label>
+  <select id="personalQuestionAnswer">
+    <option value="">請選擇正確答案</option>
+    <option value="A">選項 A</option>
+    <option value="B">選項 B</option>
+    <option value="C">選項 C</option>
+    <option value="D">選項 D</option>
+  </select>
+
+  <label for="personalQuestionExplanation">答案解析</label>
+  <textarea id="personalQuestionExplanation" rows="3" placeholder="請輸入答案解析"></textarea>
+
+  <div class="row">
+    <button class="primary" id="savePersonalQuestion">儲存題目</button>
+    <button class="plain" id="cancelPersonalQuestion">取消</button>
+  </div>
+
+</div>
+
 <h3>我的成語</h3>
+
 
   <div id="personalIdiomList">
     <p class="muted">目前尚未新增個人成語。</p>
@@ -265,15 +315,47 @@ $('mistakeTab').onclick=()=>{
 };
 
 
+
 loadPersonalData();
 renderPersonalIdioms();
+renderPersonalQuestions();
+
 
 $('personalTab').onclick=()=>tab('personal');
 
 
 
 
+
+$('addPersonalQuestion').onclick=()=>{
+
+  $('personalIdiomForm').classList.add('hidden');
+  editingPersonalWord = null;
+
+  $('personalQuestionFormTitle').textContent = '新增個人題目';
+
+  $('personalQuestionType').value = 'situation';
+  $('personalQuestionWord').value = '';
+  $('personalQuestionText').value = '';
+
+  $('personalOptionA').value = '';
+  $('personalOptionB').value = '';
+  $('personalOptionC').value = '';
+  $('personalOptionD').value = '';
+
+  $('personalQuestionAnswer').value = '';
+  $('personalQuestionExplanation').value = '';
+
+  $('personalQuestionForm').classList.remove('hidden');
+  $('personalQuestionWord').focus();
+};
+
+
 $('addPersonalIdiom').onclick=()=>{
+
+  $('personalQuestionForm').classList.add('hidden');
+
+
   editingPersonalWord = null;
 
   $('personalIdiomFormTitle').textContent = '新增個人成語';
@@ -292,7 +374,13 @@ $('addPersonalIdiom').onclick=()=>{
 
 
 
+
+$('cancelPersonalQuestion').onclick=()=>{
+  $('personalQuestionForm').classList.add('hidden');
+};
+
 $('cancelPersonalIdiom').onclick=()=>{
+
   editingPersonalWord = null;
 
   $('personalIdiomForm').classList.add('hidden');
@@ -300,7 +388,74 @@ $('cancelPersonalIdiom').onclick=()=>{
 
 
 
+
+function renderPersonalQuestions(){
+
+  const list = $('personalQuestionList');
+
+  list.replaceChildren();
+
+  if(personalQuestions.length === 0){
+    const p = document.createElement('p');
+    p.className = 'muted';
+    p.textContent = '目前尚未新增個人題目。';
+    list.appendChild(p);
+    return;
+  }
+
+  const typeNames = {
+    situation: '情境選擇題',
+    fill: '成語填空題',
+    meaning: '成語解釋選擇題'
+  };
+
+  personalQuestions.forEach(x=>{
+
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = typeNames[x.type] || x.type;
+
+    const title = document.createElement('h3');
+    title.textContent = x.word;
+
+    const question = document.createElement('p');
+    question.className = 'meaning';
+    question.textContent = x.question;
+
+    const optionList = document.createElement('div');
+
+    x.options.forEach((option, index)=>{
+      const p = document.createElement('p');
+      p.textContent = ['A','B','C','D'][index] + '. ' + option;
+      optionList.appendChild(p);
+    });
+
+    const answer = document.createElement('p');
+    answer.textContent = '正確答案：' + x.answer;
+
+    const explanation = document.createElement('p');
+    explanation.className = 'muted';
+    explanation.textContent = '答案解析：' + x.explanation;
+
+    card.append(
+      tag,
+      title,
+      question,
+      optionList,
+      answer,
+      explanation
+    );
+
+    list.appendChild(card);
+
+  });
+}
+
 function renderPersonalIdioms(){
+
   const list = $('personalIdiomList');
 
   list.replaceChildren();
@@ -402,7 +557,73 @@ card.append(tag, title, zhuyin, meaning, example, actions);
   });
 }
 
+
+$('savePersonalQuestion').onclick=()=>{
+
+  const type = $('personalQuestionType').value;
+  const word = $('personalQuestionWord').value.trim();
+  const question = $('personalQuestionText').value.trim();
+
+  const options = [
+    $('personalOptionA').value.trim(),
+    $('personalOptionB').value.trim(),
+    $('personalOptionC').value.trim(),
+    $('personalOptionD').value.trim()
+  ];
+
+  const answerKey = $('personalQuestionAnswer').value;
+  const explanation = $('personalQuestionExplanation').value.trim();
+
+  if(!word || !question || options.some(x=>!x) || !explanation){
+    alert('請完整填寫成語、題目、四個選項及答案解析。');
+    return;
+  }
+
+  if(new Set(options).size !== 4){
+    alert('四個選項不可重複。');
+    return;
+  }
+
+  if(!['A','B','C','D'].includes(answerKey)){
+    alert('請選擇正確答案。');
+    return;
+  }
+
+  const answerIndex = ['A','B','C','D'].indexOf(answerKey);
+  const answer = options[answerIndex];
+
+  
+  const newQuestion = {
+    id: Date.now(),
+    type,
+    word,
+    question,
+    options,
+    answer,
+    explanation
+  };
+
+  const oldData = [...personalQuestions];
+
+  personalQuestions.push(newQuestion);
+
+  if(!savePersonalData()){
+    personalQuestions = oldData;
+    return;
+  }
+
+  $('personalQuestionForm').classList.add('hidden');
+
+  
+  renderPersonalQuestions();
+
+  alert('題目已成功加入個人題庫！');
+
+
+};
+
 $('savePersonalIdiom').onclick=()=>{
+
 
   const word = $('personalWord').value.trim();
   const zhuyin = $('personalZhuyin').value.trim();
