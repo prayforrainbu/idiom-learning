@@ -6,7 +6,14 @@
 </style></head><body><header>📚 成語學習樂園</header><main>
 <section class="hero"><div><h1>每天學一點，累積成語力！</h1><p>搜尋、挑選成語，自由安排學習內容。自選數量不限。</p></div><div style="font-size:48px">🌱</div></section>
 <section class="stats"><div class="stat"><small>資料庫成語</small><strong id="total">30</strong></div><div class="stat"><small>本次已選</small><strong id="picked">0</strong></div><div class="stat"><small>累積作答題數（本裝置）</small><strong id="answered">0</strong></div><div class="stat"><small>已學成語（本裝置）</small><strong id="learned">0</strong></div></section>
-<section class="panel"><div class="tabs"><button class="soft active" id="libraryTab">成語圖書館</button><button class="plain" id="quizTab">成語測驗</button><button class="plain" id="mistakeTab">我的錯題本</button></div>
+
+<section class="panel">
+  <div class="tabs">
+    <button class="soft active" id="libraryTab">成語圖書館</button>
+    <button class="plain" id="quizTab">成語測驗</button>
+    <button class="plain" id="mistakeTab">我的錯題本</button>
+    <button class="plain" id="personalTab">我的題庫</button>
+  </div>
 
 <div class="row" style="gap:10px;margin-bottom:15px;flex-wrap:wrap;">
   <button type="button" class="soft" onclick="selectAll()">一鍵全選</button>
@@ -39,8 +46,34 @@
   <h2>📕 我的錯題本</h2>
   <p>這裡會顯示測驗答錯的成語，方便日後複習。</p>
  <button class="primary" id="retryMistakes">重新測驗錯題</button>
+
 <div id="mistakeList"></div>
 </div>
+
+<div id="personalPage" class="panel hidden">
+  <h2>📝 我的題庫</h2>
+  <p>建立專屬的成語學習題庫，依照自己的學習需求新增成語及測驗題目。</p>
+
+  <div class="row">
+    <button class="primary" id="addPersonalIdiom">＋ 新增成語</button>
+    <button class="soft" id="addPersonalQuestion">＋ 新增題目</button>
+    <button class="soft" id="importPersonal">批次匯入</button>
+    <button class="plain" id="exportPersonal">備份題庫</button>
+  </div>
+
+  <h3>我的成語</h3>
+  <div id="personalIdiomList">
+    <p class="muted">目前尚未新增個人成語。</p>
+  </div>
+
+  <h3>我的測驗題目</h3>
+  <div id="personalQuestionList">
+    <p class="muted">目前尚未新增個人測驗題目。</p>
+  </div>
+
+  <p class="muted">個人題庫儲存在目前使用的瀏覽器，請定期備份。</p>
+</div>
+
 <section class="panel"><h2>學習紀錄（目前儲存在這台裝置）</h2><p id="history">完成測驗後，這裡會顯示最近一次成績。正式雲端版會再加入家庭帳號及跨裝置同步。</p></section>
 </main><footer>成語學習樂園｜互動原型 V1.1・資料為教學示範，後續可持續校訂擴充</footer>
 <script>
@@ -120,21 +153,27 @@ function toggle(w){selected.has(w)?selected.delete(w):selected.add(w);render()}
 function detail(w){let x=idioms.find(a=>a.word===w);alert(`${x.word} ${x.zhuyin}\n\n${x.meaning}\n\n例句：${x.example}`);viewed.add(w);localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
 $('learned').textContent=masteredIdioms.size}
 $('search').oninput=render;$('level').onchange=render;$('clear').onclick=()=>{selected.clear();render()};
+
 function tab(which){
   $('library').classList.toggle('hidden',which!=='library');
   $('quiz').classList.toggle('hidden',which!=='quiz');
   $('mistakePage').classList.toggle('hidden',which!=='mistake');
+  $('personalPage').classList.toggle('hidden',which!=='personal');
 
   $('libraryTab').className=which==='library'?'soft active':'plain';
   $('quizTab').className=which==='quiz'?'soft active':'plain';
   $('mistakeTab').className=which==='mistake'?'soft active':'plain';
+  $('personalTab').className=which==='personal'?'soft active':'plain';
 }
+
 $('libraryTab').onclick=()=>tab('library');
 $('quizTab').onclick=()=>tab('quiz');
 $('mistakeTab').onclick=()=>{
   renderMistakes();
   tab('mistake');
 };
+$('personalTab').onclick=()=>tab('personal');
+
 $('startLearn').onclick=()=>{let arr=idioms.filter(x=>selected.has(x.word));if(!arr.length){alert('請先選擇至少一個成語。');return}let i=0;function show(){let x=arr[i];let more=i===arr.length-1?'完成':'下一個';if(confirm(`第 ${i+1} / ${arr.length} 個\n\n${x.word}（${x.zhuyin}）\n\n${x.meaning}\n\n例句：${x.example}\n\n按「確定」前往下一個；按「取消」結束。`)){viewed.add(x.word);
 localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
 $('learned').textContent=masteredIdioms.size;
