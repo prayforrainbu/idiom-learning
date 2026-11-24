@@ -63,7 +63,9 @@
 
   
 <div id="personalIdiomForm" class="panel hidden">
-  <h3>新增個人成語</h3>
+  
+<h3 id="personalIdiomFormTitle">新增個人成語</h3>
+
 
   <label for="personalWord">成語</label>
   <input id="personalWord" placeholder="例如：心花怒放">
@@ -115,7 +117,11 @@ let quizQuestions = [];
   
 let personalIdioms = [];
 
+
 let personalQuestions = [];
+
+let editingPersonalWord = null;
+
 
 
 function loadPersonalData(){
@@ -265,15 +271,33 @@ renderPersonalIdioms();
 $('personalTab').onclick=()=>tab('personal');
 
 
+
+
 $('addPersonalIdiom').onclick=()=>{
+  editingPersonalWord = null;
+
+  $('personalIdiomFormTitle').textContent = '新增個人成語';
+
+  $('personalWord').value = '';
+  $('personalZhuyin').value = '';
+  $('personalMeaning').value = '';
+  $('personalExample').value = '';
+  $('personalLevel').value = '初級';
+
   $('personalIdiomForm').classList.remove('hidden');
   $('personalWord').focus();
 };
 
 
+
+
+
 $('cancelPersonalIdiom').onclick=()=>{
+  editingPersonalWord = null;
+
   $('personalIdiomForm').classList.add('hidden');
 };
+
 
 
 function renderPersonalIdioms(){
@@ -311,7 +335,69 @@ function renderPersonalIdioms(){
     const example = document.createElement('p');
     example.textContent = '例句：' + x.example;
 
-    card.append(tag, title, zhuyin, meaning, example);
+    
+const actions = document.createElement('div');
+actions.className = 'row';
+
+const editBtn = document.createElement('button');
+editBtn.className = 'soft';
+
+editBtn.textContent = '編輯';
+
+
+editBtn.onclick = ()=>{
+  editingPersonalWord = x.word;
+
+  $('personalIdiomFormTitle').textContent = '編輯個人成語';
+
+  $('personalWord').value = x.word;
+  $('personalZhuyin').value = x.zhuyin;
+  $('personalMeaning').value = x.meaning;
+  $('personalExample').value = x.example;
+  $('personalLevel').value = x.level;
+
+  $('personalIdiomForm').classList.remove('hidden');
+  $('personalWord').focus();
+};
+
+
+
+const deleteBtn = document.createElement('button');
+deleteBtn.className = 'plain';
+
+deleteBtn.textContent = '刪除';
+
+deleteBtn.onclick = ()=>{
+  if(!confirm('確定要刪除「' + x.word + '」嗎？')){
+    return;
+  }
+
+  const oldData = [...personalIdioms];
+
+  personalIdioms = personalIdioms.filter(
+    item => item.word !== x.word
+  );
+
+  if(!savePersonalData()){
+    personalIdioms = oldData;
+    return;
+  }
+
+  if(editingPersonalWord === x.word){
+    editingPersonalWord = null;
+    $('personalIdiomForm').classList.add('hidden');
+  }
+
+  renderPersonalIdioms();
+
+  alert('成語已成功刪除！');
+};
+
+
+actions.append(editBtn, deleteBtn);
+
+card.append(tag, title, zhuyin, meaning, example, actions);
+
     list.appendChild(card);
   });
 }
@@ -329,24 +415,58 @@ $('savePersonalIdiom').onclick=()=>{
     return;
   }
 
-  if(personalIdioms.some(x=>x.word===word)){
-    alert('此成語已存在於個人題庫中。');
-    return;
-  }
+
+if(personalIdioms.some(x=>
+  x.word === word &&
+  x.word !== editingPersonalWord
+)){
+  alert('此成語已存在於個人題庫中。');
+  return;
+}
 
 
-personalIdioms.push({
+
+
+
+const isEditing = editingPersonalWord !== null;
+
+const newData = {
+
   word,
   zhuyin,
   meaning,
   example,
   level
-});
+};
+
+const oldData = [...personalIdioms];
+
+if(editingPersonalWord !== null){
+
+  const index = personalIdioms.findIndex(
+    x => x.word === editingPersonalWord
+  );
+
+  if(index === -1){
+    alert('找不到要編輯的成語。');
+    return;
+  }
+
+  personalIdioms[index] = newData;
+
+}else{
+
+  personalIdioms.push(newData);
+
+}
 
 if(!savePersonalData()){
-  personalIdioms.pop();
+  personalIdioms = oldData;
   return;
 }
+
+editingPersonalWord = null;
+
 
 
   $('personalWord').value='';
@@ -360,7 +480,13 @@ if(!savePersonalData()){
   
 renderPersonalIdioms();
 
-alert('成語已成功加入個人題庫！');
+
+alert(
+  isEditing
+    ? '成語資料已成功更新！'
+    : '成語已成功加入個人題庫！'
+);
+
 
 };
 
