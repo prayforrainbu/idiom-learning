@@ -61,7 +61,37 @@
     <button class="plain" id="exportPersonal">備份題庫</button>
   </div>
 
-  <h3>我的成語</h3>
+  
+<div id="personalIdiomForm" class="panel hidden">
+  <h3>新增個人成語</h3>
+
+  <label for="personalWord">成語</label>
+  <input id="personalWord" placeholder="例如：心花怒放">
+
+  <label for="personalZhuyin">注音</label>
+  <input id="personalZhuyin" placeholder="請輸入成語注音">
+
+  <label for="personalMeaning">成語解釋</label>
+  <textarea id="personalMeaning" rows="3" placeholder="請輸入成語的意思"></textarea>
+
+  <label for="personalExample">例句</label>
+  <textarea id="personalExample" rows="3" placeholder="請輸入成語例句"></textarea>
+
+  <label for="personalLevel">難度</label>
+  <select id="personalLevel">
+    <option value="初級">初級</option>
+    <option value="中級">中級</option>
+    <option value="高級">高級</option>
+  </select>
+
+  <div class="row">
+    <button class="primary" id="savePersonalIdiom">儲存成語</button>
+    <button class="plain" id="cancelPersonalIdiom">取消</button>
+  </div>
+</div>
+
+<h3>我的成語</h3>
+
   <div id="personalIdiomList">
     <p class="muted">目前尚未新增個人成語。</p>
   </div>
@@ -80,7 +110,62 @@
 let idioms=[{"word": "一馬當先", "zhuyin": "ㄧ ㄇㄚˇ ㄉㄤ ㄒㄧㄢ", "meaning": "形容領先或帶頭。", "example": "他一馬當先，帶領隊伍抵達終點。", "level": "初級"}, {"word": "七嘴八舌", "zhuyin": "ㄑㄧ ㄗㄨㄟˇ ㄅㄚ ㄕㄜˊ", "meaning": "形容許多人同時說話，議論紛紛。", "example": "大家七嘴八舌地討論班級活動。", "level": "初級"}, {"word": "手忙腳亂", "zhuyin": "ㄕㄡˇ ㄇㄤˊ ㄐㄧㄠˇ ㄌㄨㄢˋ", "meaning": "形容做事慌張，沒有條理。", "example": "上台前才發現忘了帶講稿，他頓時手忙腳亂。", "level": "初級"}, {"word": "心花怒放", "zhuyin": "ㄒㄧㄣ ㄏㄨㄚ ㄋㄨˋ ㄈㄤˋ", "meaning": "形容心情非常愉快。", "example": "收到好消息，她高興得心花怒放。", "level": "初級"}, {"word": "四腳朝天", "zhuyin": "ㄙˋ ㄐㄧㄠˇ ㄔㄠˊ ㄊㄧㄢ", "meaning": "形容仰面跌倒的樣子。", "example": "地板太滑，他一不小心摔個四腳朝天。", "level": "初級"}, {"word": "七手八腳", "zhuyin": "ㄑㄧ ㄕㄡˇ ㄅㄚ ㄐㄧㄠˇ", "meaning": "形容許多人一起動手。", "example": "大家七手八腳地把教室布置完成。", "level": "初級"}, {"word": "七上八下", "zhuyin": "ㄑㄧ ㄕㄤˋ ㄅㄚ ㄒㄧㄚˋ", "meaning": "形容心情忐忑不安。", "example": "公布成績前，他心裡七上八下。", "level": "初級"}, {"word": "大吃一驚", "zhuyin": "ㄉㄚˋ ㄔ ㄧ ㄐㄧㄥ", "meaning": "形容受到很大的驚嚇或意外。", "example": "看到突然出現的生日蛋糕，她大吃一驚。", "level": "初級"}, {"word": "迫不及待", "zhuyin": "ㄆㄛˋ ㄅㄨˋ ㄐㄧˊ ㄉㄞˋ", "meaning": "急切得不能再等待。", "example": "新書一到，他就迫不及待地讀起來。", "level": "初級"}, {"word": "專心致志", "zhuyin": "ㄓㄨㄢ ㄒㄧㄣ ㄓˋ ㄓˋ", "meaning": "形容一心一意，集中精神。", "example": "她專心致志地完成拼圖。", "level": "初級"}, {"word": "霧裡看花", "zhuyin": "ㄨˋ ㄌㄧˇ ㄎㄢˋ ㄏㄨㄚ", "meaning": "比喻看事情不清楚、不真切。", "example": "沒有看清楚說明，整件事像霧裡看花。", "level": "中級"}, {"word": "忙中有錯", "zhuyin": "ㄇㄤˊ ㄓㄨㄥ ㄧㄡˇ ㄘㄨㄛˋ", "meaning": "因忙碌而容易發生錯誤。", "example": "他趕著出門，忙中有錯，忘了帶鑰匙。", "level": "中級"}, {"word": "歪打正著", "zhuyin": "ㄨㄞ ㄉㄚˇ ㄓㄥˋ ㄓㄠˊ", "meaning": "原本方法不對，卻意外得到好結果。", "example": "他本想找鉛筆，卻歪打正著找到遺失的橡皮擦。", "level": "中級"}, {"word": "翩翩起舞", "zhuyin": "ㄆㄧㄢ ㄆㄧㄢ ㄑㄧˇ ㄨˇ", "meaning": "形容輕快地跳起舞來。", "example": "蝴蝶在花叢間翩翩起舞。", "level": "中級"}, {"word": "胸有成竹", "zhuyin": "ㄒㄩㄥ ㄧㄡˇ ㄔㄥˊ ㄓㄨˊ", "meaning": "比喻做事之前已有完整的想法或把握。", "example": "她準備充分，回答問題時胸有成竹。", "level": "中級"}, {"word": "畫蛇添足", "zhuyin": "ㄏㄨㄚˋ ㄕㄜˊ ㄊㄧㄢ ㄗㄨˊ", "meaning": "比喻做了多餘的事，反而不恰當。", "example": "文章已經很完整，再加一段反而畫蛇添足。", "level": "中級"}, {"word": "守株待兔", "zhuyin": "ㄕㄡˇ ㄓㄨ ㄉㄞˋ ㄊㄨˋ", "meaning": "比喻不主動努力，只想靠僥倖獲得成功。", "example": "想靠運氣考高分，無異於守株待兔。", "level": "中級"}, {"word": "亡羊補牢", "zhuyin": "ㄨㄤˊ ㄧㄤˊ ㄅㄨˇ ㄌㄠˊ", "meaning": "出了問題後及時補救，還不算晚。", "example": "發現計算錯誤後立刻訂正，也算亡羊補牢。", "level": "中級"}, {"word": "刻舟求劍", "zhuyin": "ㄎㄜˋ ㄓㄡ ㄑㄧㄡˊ ㄐㄧㄢˋ", "meaning": "比喻拘泥成法，不懂得依情況變通。", "example": "環境已經改變，還照舊方法處理，簡直刻舟求劍。", "level": "高級"}, {"word": "杯弓蛇影", "zhuyin": "ㄅㄟ ㄍㄨㄥ ㄕㄜˊ ㄧㄥˇ", "meaning": "比喻因疑神疑鬼而自相驚擾。", "example": "弄清楚只是窗簾的影子後，他才知道自己杯弓蛇影。", "level": "高級"}, {"word": "滄海一粟", "zhuyin": "ㄘㄤ ㄏㄞˇ ㄧ ㄙㄨˋ", "meaning": "比喻非常渺小。", "example": "個人的力量放在浩瀚世界中，猶如滄海一粟。", "level": "高級"}, {"word": "水到渠成", "zhuyin": "ㄕㄨㄟˇ ㄉㄠˋ ㄑㄩˊ ㄔㄥˊ", "meaning": "條件成熟，事情自然成功。", "example": "只要持續練習，成果自然水到渠成。", "level": "中級"}, {"word": "一目了然", "zhuyin": "ㄧ ㄇㄨˋ ㄌㄧㄠˇ ㄖㄢˊ", "meaning": "一看就很清楚明白。", "example": "圖表整理得很清楚，數據一目了然。", "level": "中級"}, {"word": "舉一反三", "zhuyin": "ㄐㄩˇ ㄧ ㄈㄢˇ ㄙㄢ", "meaning": "從一件事類推，理解其他相關事物。", "example": "學會解題方法後，他能舉一反三。", "level": "中級"}, {"word": "不可思議", "zhuyin": "ㄅㄨˋ ㄎㄜˇ ㄙ ㄧˋ", "meaning": "難以想像或理解。", "example": "這座橋在短時間內完工，真是不可思議。", "level": "初級"}, {"word": "半途而廢", "zhuyin": "ㄅㄢˋ ㄊㄨˊ ㄦˊ ㄈㄟˋ", "meaning": "事情未完成就中途停止。", "example": "學習樂器要持之以恆，不可半途而廢。", "level": "初級"}, {"word": "津津有味", "zhuyin": "ㄐㄧㄣ ㄐㄧㄣ ㄧㄡˇ ㄨㄟˋ", "meaning": "形容興味濃厚。", "example": "他看著有趣的故事，讀得津津有味。", "level": "初級"}, {"word": "同心協力", "zhuyin": "ㄊㄨㄥˊ ㄒㄧㄣ ㄒㄧㄝˊ ㄌㄧˋ", "meaning": "大家一條心，共同努力。", "example": "全班同心協力，完成了園遊會布置。", "level": "初級"}, {"word": "自相矛盾", "zhuyin": "ㄗˋ ㄒㄧㄤ ㄇㄠˊ ㄉㄨㄣˋ", "meaning": "言語或行為前後抵觸。", "example": "他一下說有空，一下又說沒時間，說法自相矛盾。", "level": "高級"}, {"word": "雪中送炭", "zhuyin": "ㄒㄩㄝˇ ㄓㄨㄥ ㄙㄨㄥˋ ㄊㄢˋ", "meaning": "在別人急需時給予幫助。", "example": "我忘了帶雨傘，同學借我一把，真是雪中送炭。", "level": "中級"}];
 let selected=new Set(),viewed=new Set(JSON.parse(localStorage.getItem('idiomViewed')||'[]')),answered=Number(localStorage.getItem('idiomAnswered')||0),quizList=[],qi=0,score=0,wrong=[];
 
+
 let quizQuestions = [];
+  
+let personalIdioms = [];
+
+let personalQuestions = [];
+
+
+function loadPersonalData(){
+  try {
+    const saved = localStorage.getItem('idiomPersonalData');
+
+    if(!saved) return;
+
+    const data = JSON.parse(saved);
+
+    personalIdioms = Array.isArray(data.idioms)
+      ? data.idioms
+      : [];
+
+    personalQuestions = Array.isArray(data.questions)
+      ? data.questions
+      : [];
+
+    console.log(
+      '個人題庫載入成功：' +
+      personalIdioms.length + '個成語，' +
+      personalQuestions.length + '道題目'
+    );
+
+  } catch(error){
+    console.error('個人題庫讀取失敗：', error);
+  }
+}
+
+function savePersonalData(){
+
+  try {
+    localStorage.setItem(
+      'idiomPersonalData',
+      JSON.stringify({
+        idioms: personalIdioms,
+        questions: personalQuestions
+      })
+    );
+
+    return true;
+
+  } catch(error){
+    console.error('個人題庫儲存失敗：', error);
+    alert('個人題庫儲存失敗，請檢查瀏覽器儲存空間。');
+    return false;
+  }
+}
+
+
 
 async function loadQuizQuestions(){
   try {
@@ -172,7 +257,114 @@ $('mistakeTab').onclick=()=>{
   renderMistakes();
   tab('mistake');
 };
+
+
+loadPersonalData();
+renderPersonalIdioms();
+
 $('personalTab').onclick=()=>tab('personal');
+
+
+$('addPersonalIdiom').onclick=()=>{
+  $('personalIdiomForm').classList.remove('hidden');
+  $('personalWord').focus();
+};
+
+
+$('cancelPersonalIdiom').onclick=()=>{
+  $('personalIdiomForm').classList.add('hidden');
+};
+
+
+function renderPersonalIdioms(){
+  const list = $('personalIdiomList');
+
+  list.replaceChildren();
+
+  if(personalIdioms.length===0){
+    const p = document.createElement('p');
+    p.className = 'muted';
+    p.textContent = '目前尚未新增個人成語。';
+    list.appendChild(p);
+    return;
+  }
+
+  personalIdioms.forEach(x=>{
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = x.level;
+
+    const title = document.createElement('h3');
+    title.textContent = x.word;
+
+    const zhuyin = document.createElement('div');
+    zhuyin.className = 'muted';
+    zhuyin.textContent = x.zhuyin;
+
+    const meaning = document.createElement('p');
+    meaning.className = 'meaning';
+    meaning.textContent = x.meaning;
+
+    const example = document.createElement('p');
+    example.textContent = '例句：' + x.example;
+
+    card.append(tag, title, zhuyin, meaning, example);
+    list.appendChild(card);
+  });
+}
+
+$('savePersonalIdiom').onclick=()=>{
+
+  const word = $('personalWord').value.trim();
+  const zhuyin = $('personalZhuyin').value.trim();
+  const meaning = $('personalMeaning').value.trim();
+  const example = $('personalExample').value.trim();
+  const level = $('personalLevel').value;
+
+  if(!word || !zhuyin || !meaning || !example){
+    alert('請完整填寫成語、注音、解釋及例句。');
+    return;
+  }
+
+  if(personalIdioms.some(x=>x.word===word)){
+    alert('此成語已存在於個人題庫中。');
+    return;
+  }
+
+
+personalIdioms.push({
+  word,
+  zhuyin,
+  meaning,
+  example,
+  level
+});
+
+if(!savePersonalData()){
+  personalIdioms.pop();
+  return;
+}
+
+
+  $('personalWord').value='';
+  $('personalZhuyin').value='';
+  $('personalMeaning').value='';
+  $('personalExample').value='';
+  $('personalLevel').value='初級';
+
+  $('personalIdiomForm').classList.add('hidden');
+
+  
+renderPersonalIdioms();
+
+alert('成語已成功加入個人題庫！');
+
+};
+
+
 
 $('startLearn').onclick=()=>{let arr=idioms.filter(x=>selected.has(x.word));if(!arr.length){alert('請先選擇至少一個成語。');return}let i=0;function show(){let x=arr[i];let more=i===arr.length-1?'完成':'下一個';if(confirm(`第 ${i+1} / ${arr.length} 個\n\n${x.word}（${x.zhuyin}）\n\n${x.meaning}\n\n例句：${x.example}\n\n按「確定」前往下一個；按「取消」結束。`)){viewed.add(x.word);
 localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
