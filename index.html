@@ -244,6 +244,7 @@ mistakeBook.add(quizList[qi].word);
 localStorage.setItem('idiomMistakes', JSON.stringify([...mistakeBook]))}answered++;localStorage.setItem('idiomAnswered',answered);$('answered').textContent=answered;$('feedback').textContent=ok?'答對了！':'再記一次：'+correct+'。'+(idioms.find(x=>x.word===quizList[qi].word)?.meaning || quizList[qi].explanation || '');$('feedback').classList.remove('hidden');$('next').disabled=false;$('score').textContent=`目前答對：${score} 題`}
 $('next').onclick=()=>{if(qi<quizList.length-1){qi++;showQuestion()}else{let pct=Math.round(score/quizList.length*100);$('question').textContent=`測驗完成！答對 ${score} / ${quizList.length} 題，正確率 ${pct}%。`;$('options').innerHTML='';$('feedback').textContent=wrong.length?'需要複習：'+[...new Set(wrong)].join('、'):'太棒了！本次沒有答錯。';$('feedback').classList.remove('hidden');$('progress').textContent='本次測驗結果';$('next').disabled=true;$('history').textContent=`最近一次測驗：${new Date().toLocaleString('zh-TW')}；${score} / ${quizList.length} 題，正確率 ${pct}%；錯題：${[...new Set(wrong)].join('、')||'無'}。`;localStorage.setItem('idiomLastResult',$('history').textContent)}};
 render();if(localStorage.getItem('idiomLastResult'))$('history').textContent=localStorage.getItem('idiomLastResult');
+
 async function loadMoeIdioms(){
   try {
     const response = await fetch("./idioms_moe_main.json");
@@ -259,8 +260,52 @@ async function loadMoeIdioms(){
     if (valid.length === 0) throw new Error("沒有可用的成語");
 
     idioms = valid;
-    render();
+
     console.log("教育部成語載入成功：" + idioms.length + "筆");
+
+    try {
+      const customResponse = await fetch("./idioms_custom.json");
+
+      if (!customResponse.ok) {
+        throw new Error("無法讀取補充成語資料");
+      }
+
+      const customData = await customResponse.json();
+
+      if (!Array.isArray(customData)) {
+        throw new Error("補充資料格式不正確");
+      }
+
+      const existingWords = new Set(idioms.map(x => x.word));
+
+      let added = 0;
+
+      customData.forEach(x => {
+        if (
+          x &&
+          x.word &&
+          x.zhuyin &&
+          x.meaning &&
+          !existingWords.has(x.word)
+        ) {
+          idioms.push(x);
+          existingWords.add(x.word);
+          added++;
+        }
+      });
+
+      console.log("補充成語載入成功：" + added + "筆");
+
+    } catch (error) {
+      console.warn("補充成語載入失敗，保留教育部資料：", error);
+    }
+
+    document.getElementById('total').textContent = idioms.length;
+
+    render();
+
+    console.log("成語資料合併完成：" + idioms.length + "筆");
+
   } catch (error) {
     console.error("教育部成語載入失敗，保留原本資料：", error);
   }
