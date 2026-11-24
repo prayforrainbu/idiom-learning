@@ -17,14 +17,14 @@
     "question": "上學快遲到了，小華急著找書包、穿鞋子，忙得＿＿＿＿。空格中應該填入哪個成語？",
     "options": ["胸有成竹", "手忙腳亂", "一目了然", "翩翩起舞"],
     "answer": "手忙腳亂",
-    "reviewed": false,
+    "reviewed": true,
     "explanation": "「手忙腳亂」形容做事慌張、沒有條理。"
   },
   {
     "id": 3,
     "type": "meaning",
     "word": "雪中送炭",
-    "reviewed": false,
+    "reviewed": true,
     "question": "「雪中送炭」最適合用來形容哪一種情況？",
     "options": [
       "朋友需要幫忙時，主動伸出援手",
