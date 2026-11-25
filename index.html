@@ -1664,7 +1664,47 @@ function createAutoQuizQuestion(idiom){
 
 }
 
+function buildBalancedQuiz(source,count){
 
+  const groups = new Map();
+
+  source.forEach(q=>{
+
+    if(!groups.has(q.word)){
+      groups.set(q.word,[]);
+    }
+
+    groups.get(q.word).push(q);
+
+  });
+
+  const words = shuffleQuizItems(
+    Array.from(groups.keys())
+  );
+
+  const firstRound = [];
+  const remaining = [];
+
+  words.forEach(word=>{
+
+    const questions = shuffleQuizItems(
+      groups.get(word)
+    );
+
+    firstRound.push(questions[0]);
+
+    remaining.push(
+      ...questions.slice(1)
+    );
+
+  });
+
+  return [
+    ...firstRound,
+    ...shuffleQuizItems(remaining)
+  ].slice(0,count);
+
+}
 function begin(pool,sourceMode = 'all'){
 
   const selectedWords = new Set(
@@ -1719,12 +1759,20 @@ pool.forEach(idiom=>{
     ? source.length
     : Number($('quizCount').value);
 
-  quizList = shuffleQuizItems(source).slice(0,n);
+const nextQuizList =
+  buildBalancedQuiz(source,n);
 
-if (quizList.length === 0) {
-  alert('目前選取的成語尚無可用測驗題目，可至我的題庫自行新增。');
+if(nextQuizList.length === 0){
+
+  alert(
+    '目前選取的成語尚無可用測驗題目，可至我的題庫自行新增。'
+  );
+
   return;
+
 }
+
+quizList = nextQuizList;
 
   qi = 0;
   score = 0;
