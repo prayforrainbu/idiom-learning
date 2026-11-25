@@ -27,7 +27,7 @@
 </select>
 </div>
 <div class="bar">
-  <span>已選 <b id="chosen">0</b> 個成語（不限數量）</span>
+  <span>已選 <b id="chosen">0</b> 個測驗成語</span>
   <div class="row">
     <button type="button" class="plain" onclick="selectAll()">選取搜尋結果</button>
 <button class="plain" id="clear">清除已選成語</button>
@@ -35,6 +35,14 @@
     <button class="soft" id="startQuiz">用選取成語測驗</button>
   </div>
 </div>
+<div style="margin:15px 0;">
+  <h3>我的測驗清單</h3>
+
+  <div id="selectedIdiomList"
+       style="display:flex;flex-wrap:wrap;gap:8px;">
+  </div>
+</div>
+
 <div id="cards" class="cards"></div>
 </div>
 
@@ -338,6 +346,75 @@ function getAllIdioms(){
   return Array.from(all.values());
 }
 
+function renderSelectedIdioms(){
+
+  const list = $('selectedIdiomList');
+
+  if(!list){
+    return;
+  }
+
+  list.replaceChildren();
+
+  if(selected.size === 0){
+
+    const p = document.createElement('p');
+    p.className = 'muted';
+    p.textContent =
+      '尚未選取成語，請先搜尋並加入測驗清單。';
+
+    list.appendChild(p);
+    return;
+  }
+
+  selected.forEach(word=>{
+
+    const item = document.createElement('span');
+
+    item.style.cssText =
+      'display:inline-flex;' +
+      'align-items:center;' +
+      'gap:8px;' +
+      'padding:6px 12px;' +
+      'background:#e6f5ec;' +
+      'color:#356b53;' +
+      'border-radius:20px;';
+
+    const name = document.createElement('span');
+    name.textContent = word;
+
+    const removeBtn = document.createElement('button');
+
+    removeBtn.type = 'button';
+    removeBtn.textContent = '×';
+    removeBtn.title = '移除' + word;
+
+    removeBtn.setAttribute(
+      'aria-label',
+      '移除' + word
+    );
+
+    removeBtn.style.cssText =
+      'border:none;' +
+      'background:transparent;' +
+      'color:inherit;' +
+      'padding:0 4px;' +
+      'font-size:20px;' +
+      'cursor:pointer;';
+
+    removeBtn.onclick = ()=>{
+      selected.delete(word);
+      render();
+    };
+
+    item.append(name,removeBtn);
+    list.appendChild(item);
+
+  });
+
+}
+
+
 function render(){
 
   const q = $('search').value.trim().toLowerCase();
@@ -349,6 +426,8 @@ function render(){
 
   $('picked').textContent = selected.size;
   $('chosen').textContent = selected.size;
+
+  renderSelectedIdioms();
 
   if(!q){
     const p = document.createElement('p');
