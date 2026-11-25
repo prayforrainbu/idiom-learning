@@ -1345,37 +1345,197 @@ function removeMistake(word){
   localStorage.setItem('idiomMistakes',JSON.stringify([...mistakeBook]));
   renderMistakes();
 }
-  function renderMistakes(){
-  let list=idioms.filter(x=>mistakeBook.has(x.word));
 
-  if(list.length===0){
-    $('mistakeList').innerHTML='<p>目前沒有錯題，繼續保持！</p>';
+function renderMistakes(){
+
+  const container = $('mistakeList');
+
+  container.replaceChildren();
+
+  const allIdioms = getAllIdioms();
+
+  const list = Array.from(mistakeBook).map(word=>
+    allIdioms.find(x=>x.word === word) || {
+      word: word,
+      zhuyin: '',
+      meaning: '目前題庫中已找不到此成語。',
+      example: ''
+    }
+  );
+
+  if(list.length === 0){
+
+    const p = document.createElement('p');
+    p.textContent = '目前沒有錯題，繼續保持！';
+
+    container.appendChild(p);
     return;
+
   }
 
-  $('mistakeList').innerHTML=list.map(x=>`
-    <article class="card">
-      
-<h3>${x.word} ${masteredIdioms.has(x.word)?'<span style="font-size:12px;color:#43866b;background:#e6f5ec;padding:4px 8px;border-radius:20px">✓ 已學會</span>':''}</h3>
+  list.forEach(x=>{
 
-      <div class="muted">${x.zhuyin}</div>
-      <p class="meaning">${x.meaning}</p>
-      <p>例句：${x.example}</p>
-      <button class="soft" onclick="removeMistake('${x.word}')">移除錯題</button>
-    </article>
-  `).join('');
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const title = document.createElement('h3');
+    title.textContent = x.word;
+
+    if(masteredIdioms.has(x.word)){
+
+      const badge = document.createElement('span');
+
+      badge.style.cssText =
+        'font-size:12px;' +
+        'color:#43866b;' +
+        'background:#e6f5ec;' +
+        'padding:4px 8px;' +
+        'border-radius:20px';
+
+      badge.textContent = '✓ 已學會';
+
+      title.append(' ',badge);
+
+    }
+
+    const zhuyin = document.createElement('div');
+    zhuyin.className = 'muted';
+    zhuyin.textContent = x.zhuyin || '';
+
+    const meaning = document.createElement('p');
+    meaning.className = 'meaning';
+    meaning.textContent = x.meaning || '';
+
+    const example = document.createElement('p');
+    example.textContent = x.example
+      ? '例句：' + x.example
+      : '';
+
+    const removeBtn = document.createElement('button');
+
+    removeBtn.type = 'button';
+    removeBtn.className = 'soft';
+    removeBtn.textContent = '移除錯題';
+
+    removeBtn.onclick = ()=>{
+      removeMistake(x.word);
+    };
+
+    card.append(
+      title,
+      zhuyin,
+      meaning,
+      example,
+      removeBtn
+    );
+
+    container.appendChild(card);
+
+  });
+
 }
-$('retryMistakes').onclick=()=>{
-  let pool=idioms.filter(x=>mistakeBook.has(x.word));
 
-  if(pool.length===0){
-    alert('目前沒有錯題可以測驗！');
+$('retryMistakes').onclick=()=>{
+
+  const pool = getAllIdioms().filter(
+    x=>mistakeBook.has(x.word)
+  );
+
+  if(pool.length === 0){
+
+    alert(
+      '目前沒有可重新測驗的錯題成語！'
+    );
+
     return;
+
   }
 
   tab('quiz');
+
   begin(pool);
+
 };
+function shuffleQuizItems(items){
+
+  const result = [...items];
+
+  for(let i = result.length - 1; i > 0; i--){
+
+    const j = Math.floor(
+      Math.random() * (i + 1)
+    );
+
+    [result[i],result[j]] =
+      [result[j],result[i]];
+
+  }
+
+  return result;
+
+}
+
+function createAutoQuizQuestion(idiom){
+
+  if(
+    !idiom ||
+    typeof idiom.word !== 'string' ||
+    !idiom.word.trim() ||
+    typeof idiom.meaning !== 'string' ||
+    !idiom.meaning.trim()
+  ){
+    return null;
+  }
+
+  const word = idiom.word.trim();
+  const meaning = idiom.meaning.trim();
+
+  const candidates = getAllIdioms().filter(x=>
+    typeof x.word === 'string' &&
+    x.word.trim() !== '' &&
+    x.word.trim() !== word &&
+    typeof x.meaning === 'string' &&
+    x.meaning.trim() !== '' &&
+    x.meaning.trim() !== meaning
+  );
+
+  const uniqueWords = [
+    ...new Set(
+      candidates.map(x=>x.word.trim())
+    )
+  ];
+
+  const distractors = shuffleQuizItems(
+    uniqueWords
+  ).slice(0,3);
+
+  if(distractors.length < 3){
+    return null;
+  }
+
+  return {
+    id: 'auto-meaning-' + word,
+    type: 'meaning',
+    word: word,
+    question:
+      '「' + meaning + '」最適合哪個成語？',
+    options: shuffleQuizItems([
+      word,
+      ...distractors
+    ]),
+    answer: word,
+    explanation: meaning,
+    meaning: meaning,
+    example: idiom.example || '',
+    zhuyin: idiom.zhuyin || '',
+    level: idiom.level || '',
+    source: 'auto',
+    sourceName: '自動出題',
+    reviewed: false
+  };
+
+}
+
 
 function begin(pool){
   
@@ -1386,11 +1546,34 @@ const selectedWords = new Set(
 let source = getCombinedQuestionPool(true,true)
   .filter(q => selectedWords.has(q.word));
 
+const existingWords = new Set(
+  source.map(q=>q.word)
+);
+
+pool.forEach(idiom=>{
+
+  if(!existingWords.has(idiom.word)){
+
+    const autoQuestion =
+      createAutoQuizQuestion(idiom);
+
+    if(autoQuestion){
+
+      source.push(autoQuestion);
+
+      existingWords.add(idiom.word);
+
+    }
+
+  }
+
+});
+
   let n = $('quizCount').value === 'all'
     ? source.length
     : Number($('quizCount').value);
 
-  quizList = [...source].sort(() => Math.random() - .5).slice(0, n);
+  quizList = shuffleQuizItems(source).slice(0,n);
 
 if (quizList.length === 0) {
   alert('目前選取的成語尚無可用測驗題目，可至我的題庫自行新增。');
@@ -1407,7 +1590,7 @@ function showQuestion(){let x=quizList[qi];$('progress').textContent=`第 ${qi+1
 $('question').textContent = x.question || `「${x.meaning}」最適合哪個成語？`;
 $('feedback').classList.add('hidden');$('next').disabled=true;$('score').textContent=`目前答對：${score} 題`;
 let opts = Array.isArray(x.options)
-  ? [...x.options].sort(() => Math.random() - .5)
+  ? shuffleQuizItems(x.options)
   : [x, ...idioms.filter(a =>
       a.word && a.word.trim() &&
       a.meaning && a.meaning.trim() &&
@@ -1439,7 +1622,33 @@ if(ok){
 else{btn.classList.add('wrong');buttons.find(b=>b.textContent===correct)?.classList.add('correct');
 wrong.push(quizList[qi].word);
 mistakeBook.add(quizList[qi].word);
-localStorage.setItem('idiomMistakes', JSON.stringify([...mistakeBook]))}answered++;localStorage.setItem('idiomAnswered',answered);$('answered').textContent=answered;$('feedback').textContent=ok?'答對了！':'再記一次：'+correct+'。'+(idioms.find(x=>x.word===quizList[qi].word)?.meaning || quizList[qi].explanation || '');$('feedback').classList.remove('hidden');$('next').disabled=false;$('score').textContent=`目前答對：${score} 題`}
+localStorage.setItem(
+  'idiomMistakes',
+  JSON.stringify([...mistakeBook])
+);
+
+renderMistakes();
+
+}
+
+answered++;localStorage.setItem('idiomAnswered',answered);$('answered').textContent=answered;const currentQuestion = quizList[qi];
+
+const explanation =
+  currentQuestion.explanation ||
+  getAllIdioms().find(
+    x=>x.word === currentQuestion.word
+  )?.meaning ||
+  '';
+
+$('feedback').textContent =
+  (ok
+    ? '答對了！'
+    : '答錯了，正確答案：' + correct + '。'
+  ) +
+  (explanation
+    ? ' 解析：' + explanation
+    : ''
+  );$('feedback').classList.remove('hidden');$('next').disabled=false;$('score').textContent=`目前答對：${score} 題`}
 $('next').onclick=()=>{if(qi<quizList.length-1){qi++;showQuestion()}else{let pct=Math.round(score/quizList.length*100);$('question').textContent=`測驗完成！答對 ${score} / ${quizList.length} 題，正確率 ${pct}%。`;$('options').innerHTML='';$('feedback').textContent=wrong.length?'需要複習：'+[...new Set(wrong)].join('、'):'太棒了！本次沒有答錯。';$('feedback').classList.remove('hidden');$('progress').textContent='本次測驗結果';$('next').disabled=true;$('history').textContent=`最近一次測驗：${new Date().toLocaleString('zh-TW')}；${score} / ${quizList.length} 題，正確率 ${pct}%；錯題：${[...new Set(wrong)].join('、')||'無'}。`;localStorage.setItem('idiomLastResult',$('history').textContent)}};
 render();if(localStorage.getItem('idiomLastResult'))$('history').textContent=localStorage.getItem('idiomLastResult');
 
