@@ -485,7 +485,60 @@ function renderPersonalQuestions(){
       $('personalQuestionWord').focus();
     };
 
+
+ 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'plain';
+    deleteBtn.textContent = '刪除';
+
+    deleteBtn.onclick = ()=>{
+      const confirmed = confirm(
+        '確定要刪除這筆個人測驗題目嗎？\n\n' +
+        '成語：' + x.word + '\n' +
+        '題目：' + x.question + '\n\n' +
+        '刪除後將無法復原。'
+      );
+
+
+      if(!confirmed){
+        return;
+      }
+
+      const index = personalQuestions.findIndex(
+        item => item.id === x.id
+      );
+
+      if(index === -1){
+        alert('找不到要刪除的個人測驗題目。');
+        return;
+      }
+
+
+
+      const oldData = [...personalQuestions];
+
+      personalQuestions.splice(index, 1);
+
+      if(!savePersonalData()){
+        personalQuestions = oldData;
+        return;
+      }
+
+      if(editingPersonalQuestionId === x.id){
+        editingPersonalQuestionId = null;
+        $('personalQuestionForm').classList.add('hidden');
+      }
+
+      renderPersonalQuestions();
+
+      alert('個人測驗題目已成功刪除！');
+    };
+
     actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+
+
+
 
 
     card.append(
@@ -499,6 +552,7 @@ function renderPersonalQuestions(){
     );
 
     list.appendChild(card);
+
 
 
   });
@@ -569,7 +623,6 @@ editBtn.onclick = ()=>{
 
 const deleteBtn = document.createElement('button');
 deleteBtn.className = 'plain';
-
 deleteBtn.textContent = '刪除';
 
 deleteBtn.onclick = ()=>{
