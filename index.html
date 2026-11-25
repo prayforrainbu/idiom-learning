@@ -170,7 +170,10 @@ let personalIdioms = [];
 
 let personalQuestions = [];
 
+
 let editingPersonalWord = null;
+let editingPersonalQuestionId = null;
+
 
 
 
@@ -327,7 +330,10 @@ $('personalTab').onclick=()=>tab('personal');
 
 
 
+
 $('addPersonalQuestion').onclick=()=>{
+
+  editingPersonalQuestionId = null;
 
   $('personalIdiomForm').classList.add('hidden');
   editingPersonalWord = null;
@@ -375,9 +381,12 @@ $('addPersonalIdiom').onclick=()=>{
 
 
 
+
 $('cancelPersonalQuestion').onclick=()=>{
+  editingPersonalQuestionId = null;
   $('personalQuestionForm').classList.add('hidden');
 };
+
 
 $('cancelPersonalIdiom').onclick=()=>{
 
@@ -438,7 +447,46 @@ function renderPersonalQuestions(){
 
     const explanation = document.createElement('p');
     explanation.className = 'muted';
+
     explanation.textContent = '答案解析：' + x.explanation;
+
+    const actions = document.createElement('div');
+    actions.className = 'row';
+
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'plain';
+    editBtn.textContent = '編輯';
+
+    editBtn.onclick = ()=>{
+      $('personalIdiomForm').classList.add('hidden');
+      editingPersonalWord = null;
+
+      editingPersonalQuestionId = x.id;
+
+      $('personalQuestionFormTitle').textContent = '編輯個人題目';
+      $('personalQuestionType').value = x.type;
+      $('personalQuestionWord').value = x.word;
+      $('personalQuestionText').value = x.question;
+
+      $('personalOptionA').value = x.options[0];
+      $('personalOptionB').value = x.options[1];
+      $('personalOptionC').value = x.options[2];
+      $('personalOptionD').value = x.options[3];
+
+      const answerIndex = x.options.indexOf(x.answer);
+
+      $('personalQuestionAnswer').value =
+        ['A','B','C','D'][answerIndex] || '';
+
+      $('personalQuestionExplanation').value = x.explanation;
+
+      $('personalQuestionForm').classList.remove('hidden');
+      $('personalQuestionWord').focus();
+    };
+
+    actions.appendChild(editBtn);
+
 
     card.append(
       tag,
@@ -446,10 +494,12 @@ function renderPersonalQuestions(){
       question,
       optionList,
       answer,
-      explanation
+      explanation,
+      actions
     );
 
     list.appendChild(card);
+
 
   });
 }
@@ -593,8 +643,11 @@ $('savePersonalQuestion').onclick=()=>{
   const answer = options[answerIndex];
 
   
+
+  const isEditing = editingPersonalQuestionId !== null;
+
   const newQuestion = {
-    id: Date.now(),
+    id: isEditing ? editingPersonalQuestionId : Date.now(),
     type,
     word,
     question,
@@ -605,22 +658,41 @@ $('savePersonalQuestion').onclick=()=>{
 
   const oldData = [...personalQuestions];
 
-  personalQuestions.push(newQuestion);
+  if(isEditing){
+    const index = personalQuestions.findIndex(
+      x => x.id === editingPersonalQuestionId
+    );
+
+    if(index === -1){
+      alert('找不到要編輯的題目。');
+      return;
+    }
+
+    personalQuestions[index] = {
+      ...personalQuestions[index],
+      ...newQuestion
+    };
+  }else{
+    personalQuestions.push(newQuestion);
+  }
 
   if(!savePersonalData()){
     personalQuestions = oldData;
     return;
   }
 
-  $('personalQuestionForm').classList.add('hidden');
+  editingPersonalQuestionId = null;
 
-  
+  $('personalQuestionForm').classList.add('hidden');
   renderPersonalQuestions();
 
-  alert('題目已成功加入個人題庫！');
-
-
+  alert(
+    isEditing
+      ? '個人題目已成功更新！'
+      : '題目已成功加入個人題庫！'
+  );
 };
+
 
 $('savePersonalIdiom').onclick=()=>{
 
