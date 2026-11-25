@@ -15,10 +15,7 @@
     <button class="plain" id="personalTab">我的題庫</button>
   </div>
 
-<div class="row" style="gap:10px;margin-bottom:15px;flex-wrap:wrap;">
-  <button type="button" class="soft" onclick="selectAll()">一鍵全選</button>
-  <button type="button" class="soft" onclick="clearAll()">取消全選</button>
-</div>
+
 
 <div id="library"><h2 style="margin-top:18px">搜尋並自選成語</h2><div class="row"><input id="search" placeholder="搜尋成語、注音或解釋">
 <select id="level"><option>全部難度</option><option>初級</option><option>中級</option><option>高級</option></select>
@@ -32,7 +29,8 @@
 <div class="bar">
   <span>已選 <b id="chosen">0</b> 個成語（不限數量）</span>
   <div class="row">
-    <button class="plain" id="clear">清除</button>
+    <button type="button" class="plain" onclick="selectAll()">選取搜尋結果</button>
+<button class="plain" id="clear">清除已選成語</button>
     <button class="primary" id="startLearn">開始學習</button>
     <button class="soft" id="startQuiz">用選取成語測驗</button>
   </div>
@@ -155,7 +153,7 @@
 
   <p class="muted">個人題庫儲存在目前使用的瀏覽器，請定期備份。</p>
 </div>
-<section class="panel" id="combinedQuizPanel">
+<section class="panel hidden" id="combinedQuizPanel">
 
   <h2>成語綜合測驗</h2>
 
@@ -324,27 +322,158 @@ document.getElementById('learned').textContent = masteredIdioms.size;
 const $=id=>document.getElementById(id);
 $('total').textContent=idioms.length;$('answered').textContent=answered;
 $('learned').textContent=masteredIdioms.size;
+function getAllIdioms(){
+  const all = new Map();
+
+  idioms.forEach(x=>{
+    all.set(x.word,x);
+  });
+
+  personalIdioms.forEach(x=>{
+    if(!all.has(x.word)){
+      all.set(x.word,x);
+    }
+  });
+
+  return Array.from(all.values());
+}
 
 function render(){
-  let q=$('search').value.trim().toLowerCase(),
-      lv=$('level').value,
-      m=$('mastery').value;
 
-  let list=idioms.filter(x=>
-    (lv==='全部難度'||x.level===lv)&&
-    (!q||(x.word+x.zhuyin+x.meaning).toLowerCase().includes(q))&&
-    (m==='all'||(m==='mastered'&&masteredIdioms.has(x.word))||(m==='unmastered'&&!masteredIdioms.has(x.word)))
+  const q = $('search').value.trim().toLowerCase();
+  const lv = $('level').value;
+  const m = $('mastery').value;
+  const cards = $('cards');
+
+  cards.replaceChildren();
+
+  $('picked').textContent = selected.size;
+  $('chosen').textContent = selected.size;
+
+  if(!q){
+    const p = document.createElement('p');
+    p.className = 'muted';
+    p.textContent = '請輸入想學習的成語、注音或關鍵字。';
+    cards.appendChild(p);
+    return;
+  }
+
+  const list = getAllIdioms().filter(x =>
+    (lv === '全部難度' || x.level === lv) &&
+    (x.word + x.zhuyin + x.meaning)
+      .toLowerCase().includes(q) &&
+    (
+      m === 'all' ||
+      (m === 'mastered' && masteredIdioms.has(x.word)) ||
+      (m === 'unmastered' && !masteredIdioms.has(x.word))
+    )
   );
-$('cards').innerHTML=list.map(x=>`<article class="card"><div class="row" style="justify-content:space-between"><span class="tag">${x.level}</span><input class="check" style="flex:0;width:18px;min-width:18px" type="checkbox" ${selected.has(x.word)?'checked':''} onchange="toggle('${x.word}')"></div>
-<h3>${x.word} ${masteredIdioms.has(x.word)?'<span style="font-size:12px;color:#43866b;background:#e6f5ec;padding:4px 8px;border-radius:20px">✓ 已學會</span>':''}</h3><div class="muted">${x.zhuyin}</div>
-<p class="meaning">${x.meaning}</p><button class="soft" onclick="detail('${x.word}')">查看例句</button></article>`).join('');$('picked').textContent=selected.size;$('chosen').textContent=selected.size}
+
+  if(list.length === 0){
+
+    const p = document.createElement('p');
+    p.className = 'muted';
+    p.textContent = '找不到符合條件的成語，可至我的題庫自行新增。';
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'soft';
+    addBtn.textContent = '前往我的題庫';
+    addBtn.onclick = ()=>{
+      $('personalTab').click();
+    };
+
+    cards.append(p,addBtn);
+    return;
+  }
+
+  list.forEach(x=>{
+
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const top = document.createElement('div');
+    top.className = 'row';
+    top.style.justifyContent = 'space-between';
+
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+
+    const isPersonal = personalIdioms.includes(x);
+
+    tag.textContent = isPersonal
+      ? '個人成語｜' + x.level
+      : x.level;
+
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    check.className = 'check';
+    check.style.flex = '0';
+    check.style.width = '18px';
+    check.style.minWidth = '18px';
+    check.checked = selected.has(x.word);
+    check.setAttribute('aria-label','選取' + x.word);
+    check.onchange = ()=>toggle(x.word);
+
+    top.append(tag,check);
+
+    const title = document.createElement('h3');
+    title.textContent = x.word;
+
+    if(masteredIdioms.has(x.word)){
+      const badge = document.createElement('span');
+      badge.style.cssText =
+        'font-size:12px;color:#43866b;background:#e6f5ec;padding:4px 8px;border-radius:20px';
+      badge.textContent = '✓ 已學會';
+      title.append(' ',badge);
+    }
+
+    const zhuyin = document.createElement('div');
+    zhuyin.className = 'muted';
+    zhuyin.textContent = x.zhuyin;
+
+    const meaning = document.createElement('p');
+    meaning.className = 'meaning';
+    meaning.textContent = x.meaning;
+
+    const detailBtn = document.createElement('button');
+    detailBtn.className = 'soft';
+    detailBtn.textContent = '查看例句';
+    detailBtn.onclick = ()=>detail(x.word);
+
+    const selectBtn = document.createElement('button');
+    selectBtn.className = 'plain';
+
+    selectBtn.textContent = selected.has(x.word)
+      ? '✓ 已加入測驗'
+      : '＋ 加入測驗清單';
+
+    selectBtn.onclick = ()=>{
+      toggle(x.word);
+    };
+
+    const actions = document.createElement('div');
+    actions.className = 'row';
+    actions.append(detailBtn,selectBtn);
+
+    card.append(top,title,zhuyin,meaning,actions);
+    cards.appendChild(card);
+
+  });
+
+}
+
 
 function selectAll(){
   let q=$('search').value.trim().toLowerCase();
   let lv=$('level').value;
   let m=$('mastery').value;
 
-  let list=idioms.filter(x=>
+  if(!q){
+    alert('請先搜尋成語，再選取搜尋結果。');
+    return;
+  }
+
+  let list=getAllIdioms().filter(x=>
     (lv==='全部難度'||x.level===lv)&&
     (!q||(x.word+x.zhuyin+x.meaning).toLowerCase().includes(q))&&
     (m==='all'||(m==='mastered'&&masteredIdioms.has(x.word))||(m==='unmastered'&&!masteredIdioms.has(x.word)))
@@ -361,20 +490,37 @@ function clearAll(){
 }
 
 function toggle(w){selected.has(w)?selected.delete(w):selected.add(w);render()}
-function detail(w){let x=idioms.find(a=>a.word===w);alert(`${x.word} ${x.zhuyin}\n\n${x.meaning}\n\n例句：${x.example}`);viewed.add(w);localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
+function detail(w){
+  let x=getAllIdioms().find(a=>a.word===w);
+
+  if(!x){
+    alert('找不到此成語資料。');
+    return;
+  }alert(`${x.word} ${x.zhuyin}\n\n${x.meaning}\n\n例句：${x.example}`);viewed.add(w);localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
 $('learned').textContent=masteredIdioms.size}
 $('search').oninput=render;$('level').onchange=render;$('clear').onclick=()=>{selected.clear();render()};
 
 function tab(which){
+
   $('library').classList.toggle('hidden',which!=='library');
   $('quiz').classList.toggle('hidden',which!=='quiz');
   $('mistakePage').classList.toggle('hidden',which!=='mistake');
   $('personalPage').classList.toggle('hidden',which!=='personal');
 
+  $('combinedQuizPanel').classList.toggle(
+    'hidden',
+    which !== 'quiz'
+  );
+
   $('libraryTab').className=which==='library'?'soft active':'plain';
   $('quizTab').className=which==='quiz'?'soft active':'plain';
   $('mistakeTab').className=which==='mistake'?'soft active':'plain';
   $('personalTab').className=which==='personal'?'soft active':'plain';
+
+  if(which === 'library'){
+    render();
+  }
+
 }
 
 $('libraryTab').onclick=()=>tab('library');
@@ -1091,11 +1237,25 @@ alert(
 
 
 
-$('startLearn').onclick=()=>{let arr=idioms.filter(x=>selected.has(x.word));if(!arr.length){alert('請先選擇至少一個成語。');return}let i=0;function show(){let x=arr[i];let more=i===arr.length-1?'完成':'下一個';if(confirm(`第 ${i+1} / ${arr.length} 個\n\n${x.word}（${x.zhuyin}）\n\n${x.meaning}\n\n例句：${x.example}\n\n按「確定」前往下一個；按「取消」結束。`)){viewed.add(x.word);
+$('startLearn').onclick=()=>{let arr=getAllIdioms().filter(x=>selected.has(x.word));if(!arr.length){alert('請先選擇至少一個成語。');return}let i=0;function show(){let x=arr[i];let more=i===arr.length-1?'完成':'下一個';if(confirm(`第 ${i+1} / ${arr.length} 個\n\n${x.word}（${x.zhuyin}）\n\n${x.meaning}\n\n例句：${x.example}\n\n按「確定」前往下一個；按「取消」結束。`)){viewed.add(x.word);
 localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
 $('learned').textContent=masteredIdioms.size;
 if(i<arr.length-1){i++;show()}}}show()};
-$('startQuiz').onclick=()=>{tab('quiz');begin(selected.size?idioms.filter(x=>selected.has(x.word)):idioms)};
+$('startQuiz').onclick=()=>{
+
+  const arr = getAllIdioms().filter(
+    x=>selected.has(x.word)
+  );
+
+  if(arr.length === 0){
+    alert('請先搜尋並選取至少一個成語。');
+    return;
+  }
+
+  tab('quiz');
+  begin(arr);
+
+};
 $('beginQuiz').onclick=()=>begin(selected.size?idioms.filter(x=>selected.has(x.word)):idioms);
 function removeMistake(word){
   if(!confirm(`確定要將「${word}」從錯題本移除嗎？`)){
@@ -1140,9 +1300,12 @@ $('retryMistakes').onclick=()=>{
 
 function begin(pool){
   
-let source = quizQuestions.length > 0
-  ? quizQuestions.filter(q => pool.some(x => x.word === q.word))
-  : pool;
+const selectedWords = new Set(
+  pool.map(x => x.word)
+);
+
+let source = getCombinedQuestionPool(true,true)
+  .filter(q => selectedWords.has(q.word));
 
   let n = $('quizCount').value === 'all'
     ? source.length
@@ -1151,7 +1314,7 @@ let source = quizQuestions.length > 0
   quizList = [...source].sort(() => Math.random() - .5).slice(0, n);
 
 if (quizList.length === 0) {
-  alert('目前沒有符合條件且已審核的測驗題目！');
+  alert('目前選取的成語尚無可用測驗題目，可至我的題庫自行新增。');
   return;
 }
 
