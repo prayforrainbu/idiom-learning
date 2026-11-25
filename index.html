@@ -155,7 +155,66 @@
 
   <p class="muted">個人題庫儲存在目前使用的瀏覽器，請定期備份。</p>
 </div>
+<section class="panel" id="combinedQuizPanel">
 
+  <h2>成語綜合測驗</h2>
+
+  <p class="muted">
+    自由搭配官方與個人題庫，建立專屬測驗。
+  </p>
+
+  <h3>一、選擇題庫來源</h3>
+
+  <div class="row">
+    <label>
+      <input type="checkbox"
+             id="combinedSourceOfficial"
+             checked>
+      官方題庫
+      (<span id="combinedOfficialCount">0</span> 題)
+    </label>
+
+    <label>
+      <input type="checkbox"
+             id="combinedSourcePersonal"
+             checked>
+      個人題庫
+      (<span id="combinedPersonalCount">0</span> 題)
+    </label>
+  </div>
+
+  <h3>二、選擇測驗題型</h3>
+
+  <div class="row">
+    <label>
+      <input type="checkbox"
+             id="combinedTypeSituation"
+             checked>
+      情境選擇題
+    </label>
+
+    <label>
+      <input type="checkbox"
+             id="combinedTypeFill"
+             checked>
+      成語填空題
+    </label>
+
+    <label>
+      <input type="checkbox"
+             id="combinedTypeMeaning"
+             checked>
+      成語解釋選擇題
+    </label>
+  </div>
+
+  <p id="combinedAvailableCount">
+    目前符合條件：0 題
+  </p>
+
+  <p class="muted" id="combinedQuizNotice"></p>
+
+</section>
 <section class="panel"><h2>學習紀錄（目前儲存在這台裝置）</h2><p id="history">完成測驗後，這裡會顯示最近一次成績。正式雲端版會再加入家庭帳號及跨裝置同步。</p></section>
 </main><footer>成語學習樂園｜互動原型 V1.1・資料為教學示範，後續可持續校訂擴充</footer>
 <script>
@@ -249,6 +308,8 @@ async function loadQuizQuestions(){
       q.options.includes(q.answer)
     );
 
+    updateCombinedQuizCounts();
+
     console.log("已載入審核通過的測驗題目：" + quizQuestions.length + "題");
   } catch (error) {
     console.error("測驗題庫載入失敗：", error);
@@ -328,6 +389,8 @@ $('mistakeTab').onclick=()=>{
 loadPersonalData();
 renderPersonalIdioms();
 renderPersonalQuestions();
+
+initCombinedQuizSettings();
 
 
 $('personalTab').onclick=()=>tab('personal');
@@ -476,7 +539,119 @@ function filterCombinedQuestions(
     selectedTypes.includes(q.type)
   );
 }  
+function getCombinedQuizSettings(){
+  const selectedTypes = [];
+
+  if($('combinedTypeSituation').checked){
+    selectedTypes.push('situation');
+  }
+
+  if($('combinedTypeFill').checked){
+    selectedTypes.push('fill');
+  }
+
+  if($('combinedTypeMeaning').checked){
+    selectedTypes.push('meaning');
+  }
+
+  return {
+    includeOfficial:
+      $('combinedSourceOfficial').checked,
+
+    includePersonal:
+      $('combinedSourcePersonal').checked,
+
+    selectedTypes
+  };
+}
+function updateCombinedQuizCounts(){
+
+  const requiredIds = [
+    'combinedSourceOfficial',
+    'combinedSourcePersonal',
+    'combinedTypeSituation',
+    'combinedTypeFill',
+    'combinedTypeMeaning',
+    'combinedOfficialCount',
+    'combinedPersonalCount',
+    'combinedAvailableCount',
+    'combinedQuizNotice'
+  ];
+
+  if(requiredIds.some(id => !$(id))){
+    return;
+  }
+
+  const settings = getCombinedQuizSettings();
+
+  const officialCount =
+    getCombinedQuestionPool(true,false).length;
+
+  const personalCount =
+    getCombinedQuestionPool(false,true).length;
+
+  $('combinedOfficialCount').textContent =
+    officialCount;
+
+  $('combinedPersonalCount').textContent =
+    personalCount;
+
+  const pool = getCombinedQuestionPool(
+    settings.includeOfficial,
+    settings.includePersonal
+  );
+
+  const filtered = filterCombinedQuestions(
+    pool,
+    settings.selectedTypes
+  );
+
+  $('combinedAvailableCount').textContent =
+    '目前符合條件：' + filtered.length + ' 題';
+
+  let notice = '';
+
+  if(!settings.includeOfficial &&
+     !settings.includePersonal){
+
+    notice = '請至少選擇一種題庫來源。';
+
+  }else if(settings.selectedTypes.length === 0){
+
+    notice = '請至少選擇一種測驗題型。';
+
+  }else if(filtered.length === 0){
+
+    notice = '目前沒有符合條件的測驗題目。';
+
+  }
+
+  $('combinedQuizNotice').textContent = notice;
+
+} 
+function initCombinedQuizSettings(){
+
+  const controlIds = [
+    'combinedSourceOfficial',
+    'combinedSourcePersonal',
+    'combinedTypeSituation',
+    'combinedTypeFill',
+    'combinedTypeMeaning'
+  ];
+
+  controlIds.forEach(id => {
+    $(id).addEventListener(
+      'change',
+      updateCombinedQuizCounts
+    );
+  });
+
+  updateCombinedQuizCounts();
+
+}  
 function renderPersonalQuestions(){
+
+  updateCombinedQuizCounts();
 
   const list = $('personalQuestionList');
 
