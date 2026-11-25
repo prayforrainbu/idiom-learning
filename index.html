@@ -164,6 +164,12 @@ let selected=new Set(),viewed=new Set(JSON.parse(localStorage.getItem('idiomView
 
 
 let quizQuestions = [];
+
+let combinedQuizList = [];
+let combinedQuizIndex = 0;
+let combinedQuizScore = 0;
+let combinedQuizWrong = [];
+let combinedQuizAnswers = [];
   
 let personalIdioms = [];
 
@@ -397,7 +403,79 @@ $('cancelPersonalIdiom').onclick=()=>{
 
 
 
+function isValidCombinedQuestion(q){
+  return Boolean(
+    q &&
+    typeof q.word === 'string' &&
+    q.word.trim() !== '' &&
+    typeof q.question === 'string' &&
+    q.question.trim() !== '' &&
+    ['situation','fill','meaning'].includes(q.type) &&
+    typeof q.answer === 'string' &&
+    Array.isArray(q.options) &&
+    q.options.length === 4 &&
+    q.options.every(
+      option =>
+        typeof option === 'string' &&
+        option.trim() !== ''
+    ) &&
+    new Set(q.options.map(
+      option => option.trim()
+    )).size === 4 &&
+    q.options.includes(q.answer)
+  );
+}
+function getCombinedQuestionPool(
+  includeOfficial = true,
+  includePersonal = true
+){
+  const pool = [];
 
+  if(includeOfficial){
+    quizQuestions
+      .filter(q =>
+        q.reviewed === true &&
+        isValidCombinedQuestion(q)
+      )
+      .forEach((q,index)=>{
+        pool.push({
+          ...q,
+          options: [...q.options],
+          source: 'official',
+          sourceName: '官方題庫',
+          combinedId: 'official-' + index
+        });
+      });
+  }
+
+  if(includePersonal){
+    personalQuestions
+      .filter(isValidCombinedQuestion)
+      .forEach((q,index)=>{
+        pool.push({
+          ...q,
+          options: [...q.options],
+          source: 'personal',
+          sourceName: '個人題庫',
+          combinedId: 'personal-' + index
+        });
+      });
+  }
+
+  return pool;
+}  
+function filterCombinedQuestions(
+  pool,
+  selectedTypes = [
+    'situation',
+    'fill',
+    'meaning'
+  ]
+){
+  return pool.filter(q =>
+    selectedTypes.includes(q.type)
+  );
+}  
 function renderPersonalQuestions(){
 
   const list = $('personalQuestionList');
