@@ -18,12 +18,10 @@
 
 
 <div id="library"><h2 style="margin-top:18px">搜尋並自選成語</h2><div class="row"><input id="search" placeholder="搜尋成語、注音或解釋">
-<select id="level"><option>全部難度</option><option>初級</option><option>中級</option><option>高級</option></select>
-
-<select id="mastery" onchange="render()">
-  <option value="all">全部成語</option>
-  <option value="mastered">已學會</option>
-  <option value="unmastered">尚未學會</option>
+<select id="questionSource" onchange="render()">
+  <option value="all">全部題目</option>
+  <option value="official">內建題目</option>
+  <option value="personal">自訂題目</option>
 </select>
 </div>
 <div class="bar">
@@ -62,7 +60,12 @@
 
   <div class="row">
     <button class="primary" id="addPersonalIdiom">＋ 新增成語</button>
-    <button class="soft" id="addPersonalQuestion">＋ 新增題目</button>
+   <button class="soft" id="addPersonalQuestion">＋ 新增題目</button>
+
+<button class="primary" type="button"
+        onclick="openPersonalQuiz()">
+  前往測驗
+</button>
     <button class="soft" id="importPersonal">批次匯入</button>
     <button class="plain" id="exportPersonal">備份題庫</button>
   </div>
@@ -413,13 +416,97 @@ function renderSelectedIdioms(){
   });
 
 }
+function openPersonalQuiz(){
+
+  $('questionSource').value = 'personal';
+
+  $('search').value = '';
+
+  tab('library');
+
+  render();
+
+}
+function getQuizIdioms(){
+
+  const all = new Map();
+
+  getAllIdioms().forEach(x=>{
+    all.set(x.word,x);
+  });
+
+  personalQuestions.forEach(q=>{
+
+    if(q.word && !all.has(q.word)){
+
+      all.set(q.word,{
+        word: q.word,
+        zhuyin: '',
+        meaning: '',
+        example: '',
+        level: ''
+      });
+
+    }
+
+  });
+
+  return Array.from(all.values());
+
+}
+function getSearchIdioms(){
+
+  const source = $('questionSource').value;
+
+  const q = $('search').value
+    .trim().toLowerCase();
+
+  const officialWords = new Set(
+    idioms.map(x=>x.word)
+  );
+
+  const personalWords = new Set([
+    ...personalIdioms.map(x=>x.word),
+    ...personalQuestions.map(x=>x.word)
+  ]);
+
+  if(!q && source !== 'personal'){
+    return [];
+  }
+
+  return getQuizIdioms().filter(x=>{
+
+    if(
+      source === 'official' &&
+      !officialWords.has(x.word)
+    ){
+      return false;
+    }
+
+    if(
+      source === 'personal' &&
+      !personalWords.has(x.word)
+    ){
+      return false;
+    }
+
+    const searchText = [
+      x.word,
+      x.zhuyin,
+      x.meaning
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    return !q || searchText.includes(q);
+
+  });
+
+}
 
 
 function render(){
 
   const q = $('search').value.trim().toLowerCase();
-  const lv = $('level').value;
-  const m = $('mastery').value;
+  const source = $('questionSource').value;
   const cards = $('cards');
 
   cards.replaceChildren();
@@ -429,7 +516,7 @@ function render(){
 
   renderSelectedIdioms();
 
-  if(!q){
+  if(!q && source !== 'personal'){
     const p = document.createElement('p');
     p.className = 'muted';
     p.textContent = '請輸入想學習的成語、注音或關鍵字。';
@@ -437,16 +524,7 @@ function render(){
     return;
   }
 
-  const list = getAllIdioms().filter(x =>
-    (lv === '全部難度' || x.level === lv) &&
-    (x.word + x.zhuyin + x.meaning)
-      .toLowerCase().includes(q) &&
-    (
-      m === 'all' ||
-      (m === 'mastered' && masteredIdioms.has(x.word)) ||
-      (m === 'unmastered' && !masteredIdioms.has(x.word))
-    )
-  );
+  const list = getSearchIdioms();
 
   if(list.length === 0){
 
@@ -477,11 +555,28 @@ function render(){
     const tag = document.createElement('span');
     tag.className = 'tag';
 
-    const isPersonal = personalIdioms.includes(x);
+const hasOfficial = idioms.some(
+  a=>a.word === x.word
+);
 
-    tag.textContent = isPersonal
-      ? '個人成語｜' + x.level
-      : x.level;
+const hasPersonal =
+  personalIdioms.some(
+    a=>a.word === x.word
+  ) ||
+  personalQuestions.some(
+    a=>a.word === x.word
+  );
+
+tag.textContent =
+  source === 'personal'
+    ? '自訂題目'
+    : source === 'official'
+      ? '內建題目'
+      : hasOfficial && hasPersonal
+        ? '內建＋自訂題目'
+        : hasPersonal
+          ? '自訂題目'
+          : '內建題目';
 
     const check = document.createElement('input');
     check.type = 'checkbox';
@@ -543,23 +638,21 @@ function render(){
 
 
 function selectAll(){
-  let q=$('search').value.trim().toLowerCase();
-  let lv=$('level').value;
-  let m=$('mastery').value;
 
-  if(!q){
-    alert('請先搜尋成語，再選取搜尋結果。');
+  const list = getSearchIdioms();
+
+  if(list.length === 0){
+
+    alert('目前沒有可選取的搜尋結果。');
+
     return;
+
   }
 
-  let list=getAllIdioms().filter(x=>
-    (lv==='全部難度'||x.level===lv)&&
-    (!q||(x.word+x.zhuyin+x.meaning).toLowerCase().includes(q))&&
-    (m==='all'||(m==='mastered'&&masteredIdioms.has(x.word))||(m==='unmastered'&&!masteredIdioms.has(x.word)))
-  );
-
   list.forEach(x=>selected.add(x.word));
+
   render();
+
 }
 
 
@@ -577,7 +670,12 @@ function detail(w){
     return;
   }alert(`${x.word} ${x.zhuyin}\n\n${x.meaning}\n\n例句：${x.example}`);viewed.add(w);localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
 $('learned').textContent=masteredIdioms.size}
-$('search').oninput=render;$('level').onchange=render;$('clear').onclick=()=>{selected.clear();render()};
+$('search').oninput = render;
+
+$('clear').onclick = ()=>{
+  selected.clear();
+  render();
+};
 
 function tab(which){
 
@@ -586,10 +684,7 @@ function tab(which){
   $('mistakePage').classList.toggle('hidden',which!=='mistake');
   $('personalPage').classList.toggle('hidden',which!=='personal');
 
-  $('combinedQuizPanel').classList.toggle(
-    'hidden',
-    which !== 'quiz'
-  );
+  $('combinedQuizPanel').classList.add('hidden');
 
   $('libraryTab').className=which==='library'?'soft active':'plain';
   $('quizTab').className=which==='quiz'?'soft active':'plain';
@@ -1320,21 +1415,54 @@ $('startLearn').onclick=()=>{let arr=getAllIdioms().filter(x=>selected.has(x.wor
 localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
 $('learned').textContent=masteredIdioms.size;
 if(i<arr.length-1){i++;show()}}}show()};
+
 $('startQuiz').onclick=()=>{
 
-  const arr = getAllIdioms().filter(
-    x=>selected.has(x.word)
-  );
+  const sourceMode =
+    $('questionSource').value;
+
+  const personalWords = new Set([
+    ...personalIdioms.map(x=>x.word),
+    ...personalQuestions.map(x=>x.word)
+  ]);
+
+  const arr = getQuizIdioms().filter(x=>{
+
+    if(!selected.has(x.word)){
+      return false;
+    }
+
+    if(sourceMode === 'official'){
+      return idioms.some(
+        a=>a.word === x.word
+      );
+    }
+
+    if(sourceMode === 'personal'){
+      return personalWords.has(x.word);
+    }
+
+    return true;
+
+  });
 
   if(arr.length === 0){
-    alert('請先搜尋並選取至少一個成語。');
+
+    alert(
+      '目前沒有符合題庫來源的已選成語，請先選取成語。'
+    );
+
     return;
+
   }
 
   tab('quiz');
-  begin(arr);
+
+  begin(arr,sourceMode);
 
 };
+
+
 $('beginQuiz').onclick=()=>begin(selected.size?idioms.filter(x=>selected.has(x.word)):idioms);
 function removeMistake(word){
   if(!confirm(`確定要將「${word}」從錯題本移除嗎？`)){
@@ -1352,7 +1480,7 @@ function renderMistakes(){
 
   container.replaceChildren();
 
-  const allIdioms = getAllIdioms();
+ const allIdioms = getQuizIdioms();
 
   const list = Array.from(mistakeBook).map(word=>
     allIdioms.find(x=>x.word === word) || {
@@ -1437,9 +1565,9 @@ function renderMistakes(){
 
 $('retryMistakes').onclick=()=>{
 
-  const pool = getAllIdioms().filter(
-    x=>mistakeBook.has(x.word)
-  );
+const pool = getQuizIdioms().filter(
+  x=>mistakeBook.has(x.word)
+);
 
   if(pool.length === 0){
 
@@ -1537,14 +1665,16 @@ function createAutoQuizQuestion(idiom){
 }
 
 
-function begin(pool){
-  
-const selectedWords = new Set(
-  pool.map(x => x.word)
-);
+function begin(pool,sourceMode = 'all'){
 
-let source = getCombinedQuestionPool(true,true)
-  .filter(q => selectedWords.has(q.word));
+  const selectedWords = new Set(
+    pool.map(x=>x.word)
+  );
+
+  let source = getCombinedQuestionPool(
+    sourceMode !== 'personal',
+    sourceMode !== 'official'
+  ).filter(q=>selectedWords.has(q.word));
 
 const existingWords = new Set(
   source.map(q=>q.word)
@@ -1552,7 +1682,23 @@ const existingWords = new Set(
 
 pool.forEach(idiom=>{
 
-  if(!existingWords.has(idiom.word)){
+  const canAutoGenerate =
+    sourceMode === 'all' ||
+    (
+      sourceMode === 'official' &&
+      idioms.some(x=>x.word === idiom.word)
+    ) ||
+    (
+      sourceMode === 'personal' &&
+      personalIdioms.some(
+        x=>x.word === idiom.word
+      )
+    );
+
+  if(
+    !existingWords.has(idiom.word) &&
+    canAutoGenerate
+  ){
 
     const autoQuestion =
       createAutoQuizQuestion(idiom);
