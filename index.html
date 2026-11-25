@@ -29,13 +29,13 @@
   <div class="row">
     <button type="button" class="plain" onclick="selectAll()">選取搜尋結果</button>
 <button class="plain" id="clear">清除已選成語</button>
-    <button class="primary" id="startLearn">開始學習</button>
+    
     <button class="soft" id="startQuiz">用選取成語測驗</button>
   </div>
 </div>
 <div style="margin:15px 0;">
   <h3>我的測驗清單</h3>
-
+<button class="primary" id="startQuiz">開始測驗</button>
   <div id="selectedIdiomList"
        style="display:flex;flex-wrap:wrap;gap:8px;">
   </div>
@@ -1411,10 +1411,6 @@ alert(
 
 
 
-$('startLearn').onclick=()=>{let arr=getAllIdioms().filter(x=>selected.has(x.word));if(!arr.length){alert('請先選擇至少一個成語。');return}let i=0;function show(){let x=arr[i];let more=i===arr.length-1?'完成':'下一個';if(confirm(`第 ${i+1} / ${arr.length} 個\n\n${x.word}（${x.zhuyin}）\n\n${x.meaning}\n\n例句：${x.example}\n\n按「確定」前往下一個；按「取消」結束。`)){viewed.add(x.word);
-localStorage.setItem('idiomViewed',JSON.stringify([...viewed]));
-$('learned').textContent=masteredIdioms.size;
-if(i<arr.length-1){i++;show()}}}show()};
 
 $('startQuiz').onclick=()=>{
 
